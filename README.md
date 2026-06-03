@@ -1,4 +1,4 @@
-# 🎯 ARENA FPS
+# ARENA FPS
 
 A fast-paced browser-based first-person shooter built with Three.js. Inspired by the movement feel of Rivals and the weapon/UI systems of Counter-Strike 2.
 
@@ -8,7 +8,7 @@ A fast-paced browser-based first-person shooter built with Three.js. Inspired by
 
 ---
 
-## 🕹️ Controls
+## Controls
 
 | Key | Action |
 |-----|--------|
@@ -28,7 +28,7 @@ A fast-paced browser-based first-person shooter built with Three.js. Inspired by
 
 ---
 
-## ⚡ Movement System
+## Movement System
 
 ### Sliding
 Sprint and press `Shift` to trigger a momentum-based slide. You maintain your current velocity and glide at high speed. Sliding ends after ~0.6 seconds or when you leave the ground.
@@ -50,7 +50,7 @@ Equipping heavier weapons slows you down. Knife gives a speed bonus.
 
 ---
 
-## 🔫 Weapon Arsenal
+## Weapon Arsenal
 
 ### Rifles
 - **M4A4** — Balanced full-auto, low recoil
@@ -87,7 +87,7 @@ Equipping heavier weapons slows you down. Knife gives a speed bonus.
 
 ---
 
-## 🗺️ Map: GRID ARENA
+## Map: GRID ARENA
 
 The map is a large open arena (120×120 units) inspired by Rivals' flat, clean aesthetic with added verticality:
 
@@ -102,7 +102,7 @@ The map is a large open arena (120×120 units) inspired by Rivals' flat, clean a
 
 ---
 
-## 🎮 Gameplay Features
+## Gameplay Features
 
 - **CS2-style weapon buy menu** (`B`) with category tabs
 - **Hitmarkers** with headshot color change
@@ -120,7 +120,7 @@ The map is a large open arena (120×120 units) inspired by Rivals' flat, clean a
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Three.js r128** — 3D rendering
 - **Vanilla JavaScript** — Game logic
@@ -128,34 +128,8 @@ The map is a large open arena (120×120 units) inspired by Rivals' flat, clean a
 - **CSS** — HUD and menus
 - No build tools required — open `index.html` directly
 
----
-
-## 🚀 Running Locally
-
-```bash
-git clone https://github.com/yourusername/arena-fps.git
-cd arena-fps
-# Open index.html in your browser, or serve with:
-npx serve .
-# or
-python -m http.server 8080
-```
-
-Then open `http://localhost:8080` in Chrome or Firefox.
-
 > **Note:** Pointer lock (mouse capture) requires a browser — won't work when opened as a raw `file://` path in some browsers due to security restrictions. Use a local server.
 
----
-
-## 📁 Project Structure
-
-```
-arena-fps/
-├── index.html        # Main game file (self-contained)
-├── README.md         # This file
-├── LICENSE           # MIT License
-└── CONTRIBUTING.md   # Contribution guide
-```
 
 ---
 
