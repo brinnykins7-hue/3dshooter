@@ -1,6 +1,6 @@
 # ARENA FPS
 
-A fast-paced browser-based first-person shooter built with Three.js. Inspired by the movement feel of Rivals and the weapon/UI systems of Counter-Strike 2.
+A fast-paced browser-based first-person shooter built with Three.js.
 
 ![ARENA FPS](https://img.shields.io/badge/engine-Three.js%20r128-blue?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Web%20Browser-green?style=flat-square)
@@ -14,109 +14,83 @@ A fast-paced browser-based first-person shooter built with Three.js. Inspired by
 |-----|--------|
 | `W A S D` | Move |
 | `Space` | Jump |
-| `Shift` | Slide (while sprinting) |
+| `Shift` | Sprint |
 | `Ctrl` | Crouch |
-| `Wall + Space` | Wall Jump |
 | `LMB` | Shoot |
 | `RMB` | ADS (Aim Down Sights) |
 | `R` | Reload |
 | `1` | Primary Weapon |
 | `2` | Secondary / Pistol |
 | `3` | Knife (fastest movement) |
-| `B` | Open Weapon Buy Menu |
-| `Esc` | Close Menu / Pause |
+| `B` | Open Weapon Menu |
+| `Esc` | Unlock Mouse |
 
 ---
 
-## Movement System
+## Weapons
 
-### Sliding
-Sprint and press `Shift` to trigger a momentum-based slide. You maintain your current velocity and glide at high speed. Sliding ends after ~0.6 seconds or when you leave the ground.
+### Rifles
+- **AK-47** — High damage, moderate recoil
+- **M4A1** — Balanced full-auto, low recoil
 
-### Wall Jumping
-Approach any wall while airborne and press `Space`. The game detects wall proximity in four cardinal directions and launches you off with a directional boost. Has a small cooldown to prevent infinite wall-riding.
+### SMGs
+- **MP5-SD** — Silenced, fast fire rate
+- **P90** — 50-round mag, reliable at close range
 
-### Speed Multipliers by Weapon
-Equipping heavier weapons slows you down. Knife gives a speed bonus.
+### Shotguns
+- **Nova** — 9 pellets, pump action
+- **XM1014** — Semi-auto, fast follow-up shots
+
+### Snipers
+- **AWP** — High damage, strong aim-down-sights zoom
+
+### Pistols
+- **Glock-18** — Large mag, low damage
+- **Desert Eagle** — High damage, heavy recoil
+
+### Melee
+- **Knife** — Silent, fastest movement speed
+
+---
+
+## Movement
+
+Heavier weapons slow you down. The knife gives the fastest movement. Sprint with `Shift` on the ground for a speed boost.
 
 | Weapon Class | Speed |
 |---|---|
 | Knife | 115% |
 | Pistol | 97–100% |
-| SMG | 91–95% |
-| Rifle | 82–87% |
+| SMG | 92–95% |
+| Rifle | 85% |
 | Shotgun | 86–88% |
-| Sniper | 70–82% |
+| Sniper | 70% |
 
 ---
 
-## Weapon Arsenal
+## Map
 
-### Rifles
-- **M4A4** — Balanced full-auto, low recoil
-- **AK-47** — High damage, more recoil
-- **M4A1-S** — Silenced, tight spread, smaller mag
-- **FAMAS** — High RPM burst rifle
-- **SG-553** — Mid-damage, scoped rifle
+A large open arena (120×120 units) with a bright, clean look:
 
-### SMGs
-- **MP5-SD** — Silenced, fast fire rate
-- **MAC-10** — Fastest RPM, loose spread
-- **P90** — 50-round mag, reliable
-- **UMP-45** — High damage SMG
-
-### Shotguns
-- **Nova** — 9 pellets, pump action, strong recoil
-- **XM1014** — Semi-auto shotgun
-- **MAG-7** — Tight spread, slowest pump
-
-### Snipers
-- **AWP** — 1-hit torso kill, heavy slow
-- **SSG-08** — Scout rifle, faster movement
-- **G3SG1** — Auto-sniper
-
-### Pistols
-- **Glock-18** — High mag, low damage
-- **USP-S** — Silenced, tight spread
-- **Desert Eagle** — High damage, strong recoil
-- **Five-SeveN** — AP pistol, high mag
-- **Tec-9** — Run-and-gun pistol
-
-### Melee
-- **Knife** — Fastest movement, 1-hit on close range, silent
+- Light gray floor and walls
+- Central raised platform with cover boxes scattered around
+- Corner pillars and elevated platforms for vertical play
+- Wall-jump corridor walls along the X-axis
+- 10 stationary target boards around the walls to shoot at
 
 ---
 
-## Map: GRID ARENA
+## Features
 
-The map is a large open arena (120×120 units) inspired by Rivals' flat, clean aesthetic with added verticality:
-
-- **Grid floor** with glowing line overlays
-- **4 elevated corner platforms** at height 4
-- **Central raised platform** (2 units high)
-- **Wall-jump corridor walls** along the X-axis
-- **Floating mid platforms** for air control
-- **Cover boxes** scattered around mid
-- **4 tall corner pillars** for structure
-- **Fog** at 80–200 units for atmosphere
-
----
-
-## Gameplay Features
-
-- **CS2-style weapon buy menu** (`B`) with category tabs
-- **Hitmarkers** with headshot color change
-- **Kill feed** in top-right corner
-- **Velocity bar** (bottom left)
-- **Scope overlay** for sniper ADS
-- **Screen shake** on shotgun fire
-- **Weapon bob animation** while moving
-- **ADS zoom** on all weapons (RMB)
-- **Smooth reload animation**
-- **Bullet tracers**
-- **Hit particles** (orange = headshot)
-- **Respawn system** (3s on death)
-- **Enemy respawn** after 3s
+- Weapon selection menu (`B`) with category tabs
+- Hitmarkers on target hits
+- Kill feed in top-right corner
+- Velocity bar (bottom left)
+- Scope overlay for sniper ADS
+- Weapon bob animation while moving
+- Smooth reload animation
+- Bullet decals that persist on surfaces
+- Hit particles on impact
 
 ---
 
@@ -126,24 +100,22 @@ The map is a large open arena (120×120 units) inspired by Rivals' flat, clean a
 - **Vanilla JavaScript** — Game logic
 - **HTML5 Canvas** — Scope overlay
 - **CSS** — HUD and menus
-- No build tools required — open `index.html` directly
+- No build tools required — open `index.html` in a browser
 
-> **Note:** Pointer lock (mouse capture) requires a browser — won't work when opened as a raw `file://` path in some browsers due to security restrictions. Use a local server.
-
+> **Note:** Pointer lock (mouse capture) requires a local server in some browsers. Running directly as a `file://` URL may not work due to security restrictions.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get involved.
 
 Ideas welcome:
-- Multiplayer via WebSockets
-- More map geometry / map editor
 - Sound effects (Web Audio API)
-- Grenade/utility system
-- Scoreboards
+- More map geometry
+- Multiplayer via WebSockets
 - Mobile touch controls
+- Scoreboards
 
 ---
 
