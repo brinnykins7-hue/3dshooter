@@ -1,4 +1,4 @@
-# ARENA FPS
+# gridlock
 
 A fast-paced browser-based first-person shooter built with Three.js.
 
@@ -31,18 +31,6 @@ A fast-paced browser-based first-person shooter built with Three.js.
 
 ### Rifles
 - **AK-47** — High damage, moderate recoil
-- **M4A1** — Balanced full-auto, low recoil
-
-### SMGs
-- **MP5-SD** — Silenced, fast fire rate
-- **P90** — 50-round mag, reliable at close range
-
-### Shotguns
-- **Nova** — 9 pellets, pump action
-- **XM1014** — Semi-auto, fast follow-up shots
-
-### Snipers
-- **AWP** — High damage, strong aim-down-sights zoom
 
 ### Pistols
 - **Glock-18** — Large mag, low damage
