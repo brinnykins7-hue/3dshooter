@@ -1,80 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GRIDLOCK — FPS</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
-    #canvas { display: block; width: 100vw; height: 100vh; }
-    #ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GRIDLOCK — FPS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:'Courier New',monospace}
+#canvas{display:block;width:100vw;height:100vh}
+#ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
 
-    #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; }
-    #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00ff41; box-shadow: 0 0 3px #00ff41; }
-    #crosshair::before { width: 1px; height: 10px; top: 3px; left: 7px; }
-    #crosshair::after  { width: 10px; height: 1px; top: 7px; left: 3px; }
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px}
+#crosshair::before,#crosshair::after{content:'';position:absolute;background:#00ff41;box-shadow:0 0 3px #00ff41}
+#crosshair::before{width:1px;height:10px;top:3px;left:7px}
+#crosshair::after{width:10px;height:1px;top:7px;left:3px}
 
-    #hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 20px; }
-    .weapon-slot { background: rgba(0,0,0,0.5); border: 1.5px solid rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 4px; color: rgba(255,255,255,0.4); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; transition: all 0.1s; }
-    .weapon-slot.active { border-color: rgba(255,255,255,0.9); color: white; background: rgba(255,255,255,0.1); }
-    .weapon-slot .key { font-size: 9px; opacity: 0.5; display: block; margin-bottom: 2px; }
+#hitmarker{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;pointer-events:none;opacity:0;transition:opacity 0.06s}
+#hitmarker::before,#hitmarker::after{content:'';position:absolute;background:#ff4444}
+#hitmarker::before{width:2px;height:8px;top:6px;left:9px}
+#hitmarker::after{width:8px;height:2px;top:9px;left:6px}
+#hitmarker.show{opacity:1}
 
-    #speed-bar { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); width: 200px; }
-    #speed-label { color: rgba(255,255,255,0.4); font-size: 9px; letter-spacing: 3px; text-align: center; margin-bottom: 4px; }
-    #speed-track { width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; }
-    #speed-fill { height: 100%; width: 0%; background: white; border-radius: 1px; transition: width 0.05s; }
+#hud-bottom{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:20px}
+.weapon-slot{background:rgba(0,0,0,0.5);border:1.5px solid rgba(255,255,255,0.15);padding:8px 16px;border-radius:4px;color:rgba(255,255,255,0.4);font-size:11px;text-transform:uppercase;letter-spacing:2px;transition:all .1s}
+.weapon-slot.active{border-color:rgba(255,255,255,0.9);color:#fff;background:rgba(255,255,255,0.1)}
+.weapon-slot .key{font-size:9px;opacity:.5;display:block;margin-bottom:2px}
 
-    #top-left { position: absolute; top: 20px; left: 20px; color: rgba(255,255,255,0.6); font-size: 11px; letter-spacing: 2px; line-height: 1.8; }
-    #top-left .title { font-size: 16px; color: white; letter-spacing: 4px; margin-bottom: 8px; }
-    #status-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-    .tag { font-size: 9px; padding: 2px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 2px; color: rgba(255,255,255,0.4); letter-spacing: 2px; transition: all 0.15s; }
-    .tag.active { border-color: #00ffaa; color: #00ffaa; }
+#speed-bar{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);width:200px}
+#speed-label{color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:3px;text-align:center;margin-bottom:4px}
+#speed-track{width:100%;height:2px;background:rgba(255,255,255,0.1);border-radius:1px}
+#speed-fill{height:100%;width:0%;background:#fff;border-radius:1px;transition:width .05s}
 
-    #ammo-display { position: absolute; bottom: 80px; right: 28px; color: white; font-size: 32px; letter-spacing: 2px; text-align: right; text-shadow: 0 0 8px rgba(255,255,255,0.3); }
-    #ammo-reserve { font-size: 14px; color: rgba(255,255,255,0.45); letter-spacing: 2px; }
-    #reload-msg { font-size: 11px; letter-spacing: 4px; color: #ffaa00; margin-top: 4px; opacity: 0; transition: opacity 0.2s; }
-    #reload-msg.show { opacity: 1; }
+#top-left{position:absolute;top:20px;left:20px;color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:2px;line-height:1.8}
+#top-left .title{font-size:16px;color:#fff;letter-spacing:4px;margin-bottom:8px}
+#status-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.tag{font-size:9px;padding:2px 8px;border:1px solid rgba(255,255,255,0.2);border-radius:2px;color:rgba(255,255,255,0.4);letter-spacing:2px;transition:all .15s}
+.tag.active{border-color:#00ffaa;color:#00ffaa}
 
-    #shoot-flash { position: fixed; inset: 0; background: rgba(255,255,255,0.025); pointer-events: none; opacity: 0; z-index: 5; transition: opacity 0.06s; }
-    #shoot-flash.flash { opacity: 1; }
+/* Ammo */
+#ammo-display{position:absolute;bottom:80px;right:28px;color:#fff;font-size:32px;letter-spacing:2px;text-align:right;text-shadow:0 0 8px rgba(255,255,255,0.3)}
+#ammo-reserve{font-size:14px;color:rgba(255,255,255,0.45);letter-spacing:2px}
+#reload-msg{font-size:11px;letter-spacing:4px;color:#ffaa00;margin-top:4px;opacity:0;transition:opacity .2s}
+#reload-msg.show{opacity:1}
 
-    #buy-menu { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.82); display: none; flex-direction: column; align-items: center; justify-content: center; color: white; pointer-events: all; }
-    #buy-menu.open { display: flex; }
-    #buy-menu h2 { font-size: 22px; letter-spacing: 8px; margin-bottom: 28px; }
-    #buy-menu .buy-grid { display: grid; grid-template-columns: repeat(3, 220px); gap: 14px; }
-    .buy-item { background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 18px 20px; cursor: pointer; transition: all 0.12s; display: flex; flex-direction: column; gap: 6px; }
-    .buy-item:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.6); }
-    .buy-item.equipped { border-color: #00ffaa; color: #00ffaa; }
-    .buy-item .item-name { font-size: 13px; letter-spacing: 3px; }
-    .buy-item .item-key  { font-size: 10px; opacity: 0.45; letter-spacing: 2px; }
-    .buy-item .item-desc { font-size: 10px; opacity: 0.55; margin-top: 4px; }
-    #buy-close { margin-top: 24px; font-size: 11px; letter-spacing: 4px; color: rgba(255,255,255,0.4); cursor: pointer; }
-    #buy-close:hover { color: white; }
+/* Kill / hit feed top-right */
+#kill-feed{position:absolute;top:20px;right:20px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.kf-entry{font-size:11px;letter-spacing:2px;color:#fff;background:rgba(0,0,0,0.55);border:1px solid rgba(255,80,80,0.4);border-radius:3px;padding:4px 10px;opacity:1;transition:opacity .4s}
+.kf-entry.fade{opacity:0}
 
-    #overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; cursor: pointer; }
-    #overlay h1 { font-size: 48px; letter-spacing: 12px; margin-bottom: 8px; }
-    #overlay p { font-size: 13px; letter-spacing: 4px; color: rgba(255,255,255,0.5); margin-top: 8px; }
-    #overlay .controls-grid { margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 32px; font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
-    #overlay .controls-grid span { color: rgba(255,255,255,0.9); }
-    #overlay .click-to-play { margin-top: 40px; font-size: 13px; letter-spacing: 6px; color: rgba(255,255,255,0.7); animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+/* Screen flashes */
+#shoot-flash{position:fixed;inset:0;background:rgba(255,255,255,0.022);pointer-events:none;opacity:0;z-index:5;transition:opacity .06s}
+#shoot-flash.flash{opacity:1}
+#walljump-flash{position:fixed;inset:0;background:rgba(180,220,255,0.055);pointer-events:none;opacity:0;z-index:5;transition:opacity .1s}
+#walljump-flash.flash{opacity:1}
+#slide-boost-flash{position:fixed;inset:0;background:rgba(0,255,150,0.04);pointer-events:none;opacity:0;z-index:5;transition:opacity .15s}
+#slide-boost-flash.flash{opacity:1}
 
-    #knife-boost { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; letter-spacing: 4px; color: #00ffaa; opacity: 0; transition: opacity 0.3s; pointer-events: none; margin-top: 40px; }
-    #knife-boost.show { opacity: 1; }
+/* Buy menu */
+#buy-menu{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.82);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;pointer-events:all}
+#buy-menu.open{display:flex}
+#buy-menu h2{font-size:22px;letter-spacing:8px;margin-bottom:28px}
+.buy-grid{display:grid;grid-template-columns:repeat(3,220px);gap:14px}
+.buy-item{background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.18);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;gap:6px}
+.buy-item:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.6)}
+.buy-item.equipped{border-color:#00ffaa;color:#00ffaa}
+.buy-item .item-name{font-size:13px;letter-spacing:3px}
+.buy-item .item-key{font-size:10px;opacity:.45;letter-spacing:2px}
+.buy-item .item-desc{font-size:10px;opacity:.55;margin-top:4px}
+#buy-close{margin-top:24px;font-size:11px;letter-spacing:4px;color:rgba(255,255,255,0.4);cursor:pointer}
+#buy-close:hover{color:#fff}
 
-    #walljump-flash { position: fixed; inset: 0; background: rgba(255,255,255,0.04); pointer-events: none; opacity: 0; z-index: 5; transition: opacity 0.1s; }
-    #walljump-flash.flash { opacity: 1; }
+/* Overlay */
+#overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;cursor:pointer}
+#overlay h1{font-size:48px;letter-spacing:12px;margin-bottom:8px}
+#overlay p{font-size:13px;letter-spacing:4px;color:rgba(255,255,255,0.5);margin-top:8px}
+.controls-grid{margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:6px 32px;font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:1px}
+.controls-grid span{color:rgba(255,255,255,0.9)}
+.click-to-play{margin-top:40px;font-size:13px;letter-spacing:6px;color:rgba(255,255,255,0.7);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 
-    #hitmarker { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; pointer-events: none; opacity: 0; transition: opacity 0.08s; }
-    #hitmarker::before, #hitmarker::after { content: ''; position: absolute; background: white; }
-    #hitmarker::before { width: 1px; height: 8px; top: 5px; left: 8px; }
-    #hitmarker::after  { width: 8px; height: 1px; top: 8px; left: 5px; }
-    #hitmarker.show { opacity: 1; }
-
-    #inspect-label { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 5px; color: rgba(255,255,255,0.5); opacity: 0; transition: opacity 0.3s; }
-    #inspect-label.show { opacity: 1; }
-  </style>
+#knife-boost{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;letter-spacing:4px;color:#00ffaa;opacity:0;transition:opacity .3s;pointer-events:none;margin-top:40px}
+#knife-boost.show{opacity:1}
+#inspect-label{position:absolute;bottom:130px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:5px;color:rgba(255,255,255,0.5);opacity:0;transition:opacity .3s}
+#inspect-label.show{opacity:1}
+</style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
@@ -83,7 +92,7 @@
   <div id="hitmarker"></div>
   <div id="top-left">
     <div class="title">GRIDLOCK</div>
-    <div style="font-size:10px;opacity:.5;letter-spacing:2px">ARENA v1.2</div>
+    <div style="font-size:10px;opacity:.5;letter-spacing:2px">ARENA v1.3</div>
     <div id="status-tags">
       <div class="tag" id="tag-air">AIR</div>
       <div class="tag" id="tag-wall">WALL</div>
@@ -91,6 +100,7 @@
       <div class="tag" id="tag-fast">FAST</div>
     </div>
   </div>
+  <div id="kill-feed"></div>
   <div id="speed-bar">
     <div id="speed-label">VELOCITY</div>
     <div id="speed-track"><div id="speed-fill"></div></div>
@@ -110,12 +120,13 @@
 </div>
 <div id="shoot-flash"></div>
 <div id="walljump-flash"></div>
+<div id="slide-boost-flash"></div>
 
 <div id="buy-menu">
   <h2>LOADOUT</h2>
   <div class="buy-grid">
-    <div class="buy-item" data-weapon="rifle"><div class="item-name">AK-GRID</div><div class="item-key">[1]</div><div class="item-desc">Full-auto rifle · 30 rounds · Low recoil</div></div>
-    <div class="buy-item" data-weapon="pistol"><div class="item-name">P-LOCK</div><div class="item-key">[2]</div><div class="item-desc">Semi-auto pistol · 12 rounds · Fast draw</div></div>
+    <div class="buy-item" data-weapon="rifle"><div class="item-name">AK-GRID</div><div class="item-key">[1]</div><div class="item-desc">Full-auto · ∞ ammo · Low recoil</div></div>
+    <div class="buy-item" data-weapon="pistol"><div class="item-name">P-LOCK</div><div class="item-key">[2]</div><div class="item-desc">Semi-auto · ∞ ammo · Fast draw</div></div>
     <div class="buy-item equipped" data-weapon="knife"><div class="item-name">FIELD KNIFE</div><div class="item-key">[3]</div><div class="item-desc">+50% move speed · Inspect on F</div></div>
   </div>
   <div id="buy-close">[B or ESC] CLOSE</div>
@@ -125,484 +136,714 @@
   <h1>GRIDLOCK</h1>
   <p>FAST-PACED ARENA SHOOTER</p>
   <div class="controls-grid">
-    <div><span>WASD</span> — Move</div>
-    <div><span>SPACE</span> — Jump / Wall Jump</div>
-    <div><span>SHIFT</span> — Slide Dash</div>
-    <div><span>1 2 3</span> — Weapons</div>
-    <div><span>B</span> — Buy Menu</div>
-    <div><span>F</span> — Inspect Weapon</div>
-    <div><span>MOUSE</span> — Look</div>
-    <div><span>LMB</span> — Shoot / Stab</div>
-    <div><span>RMB</span> — Knife Slash</div>
-    <div><span>R</span> — Reload</div>
+    <div><span>WASD</span> — Move</div><div><span>SPACE</span> — Jump / Wall Jump</div>
+    <div><span>SHIFT</span> — Slide Dash</div><div><span>1 2 3</span> — Weapons</div>
+    <div><span>B</span> — Buy Menu</div><div><span>F</span> — Inspect</div>
+    <div><span>LMB</span> — Shoot</div><div><span>RMB</span> — Knife Slash</div>
+    <div><span>R</span> — Reload</div><div><span>Q</span> — Last Weapon</div>
   </div>
   <div class="click-to-play">CLICK TO PLAY</div>
 </div>
 
-<script type="importmap">{ "imports": { "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js" } }</script>
+<script type="importmap">{"imports":{"three":"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
 
-// ── BLOCK Ctrl+W and other tab-closing shortcuts ──────────────────────────────
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && ['KeyW','KeyT','KeyN','KeyR'].includes(e.code)) {
-    e.preventDefault(); e.stopPropagation();
-  }
-}, true);
+// Block Ctrl+W etc
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&['KeyW','KeyT','KeyN','KeyR'].includes(e.code)){e.preventDefault();e.stopPropagation();}
+},true);
 
-// ── CONSTANTS ─────────────────────────────────────────────────────────────────
-const GRAVITY = -22, JUMP_FORCE = 8.5, WALK_SPEED = 7.5;
-const KNIFE_MULT = 1.5, CROUCH_MULT = 0.45, AIR_CONTROL = 0.32, FRICTION = 10;
-const WALL_JUMP_FORCE = 9, WALL_JUMP_UP = 7.5, MAX_WALL_JUMPS = 2;
-const SLIDE_FORCE = 16, SLIDE_DUR = 0.42;
-const PLAYER_HEIGHT = 1.75, PLAYER_RADIUS = 0.32;
-
-const WEAPON_CONFIGS = {
-  rifle:  { ammo:30, reserve:90,  auto:true,  rpm:550, recoil:0.032 },
-  pistol: { ammo:12, reserve:48,  auto:false, rpm:280, recoil:0.048 },
-  knife:  { ammo:-1, reserve:-1,  auto:false, rpm:120, recoil:0     },
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const GRAVITY=-22, JUMP_FORCE=8.5, WALK_SPEED=7.5;
+const KNIFE_MULT=1.5, AIR_CONTROL=0.3, FRICTION=10;
+const WALL_JUMP_FORCE=9, WALL_JUMP_UP=7.5, MAX_WALL_JUMPS=2;
+const SLIDE_FORCE=15, SLIDE_DUR=0.4, SLIDE_JUMP_BONUS=3.5;
+const PLAYER_H=1.75, PLAYER_R=0.3;
+const WEAPON_CONFIGS={
+  rifle: {auto:true, rpm:540, recoil:0.03},
+  pistol:{auto:false,rpm:260,recoil:0.045},
+  knife: {auto:false,rpm:130,recoil:0},
 };
 
-// ── SCENE ─────────────────────────────────────────────────────────────────────
-const canvas = document.getElementById('canvas');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+// ─── RENDERER / SCENE ─────────────────────────────────────────────────────────
+const canvas=document.getElementById('canvas');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
 renderer.setClearColor(0x1a1a1e);
 
-const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x1a1a1e, 0.022);
-
-const camera = new THREE.PerspectiveCamera(85, innerWidth/innerHeight, 0.05, 300);
-camera.position.set(0, PLAYER_HEIGHT, 5);
-
-scene.add(new THREE.AmbientLight(0xffffff, 0.38));
-const sun = new THREE.DirectionalLight(0xffffff, 1.1);
-sun.position.set(20,40,20); sun.castShadow = true;
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x1a1a1e,0.02);
+const camera=new THREE.PerspectiveCamera(85,innerWidth/innerHeight,0.05,300);
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
+const sun=new THREE.DirectionalLight(0xffffff,1.1);
+sun.position.set(20,40,20);sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048);
-sun.shadow.camera.left=sun.shadow.camera.bottom=-80;
-sun.shadow.camera.right=sun.shadow.camera.top=80;
-sun.shadow.camera.far=200;
-scene.add(sun);
+sun.shadow.camera.left=-80;sun.shadow.camera.right=80;
+sun.shadow.camera.bottom=-80;sun.shadow.camera.top=80;
+sun.shadow.camera.far=200;scene.add(sun);
 [0x8888ff,0xaaffee,0xffffff].forEach((c,i)=>{
-  const pl=new THREE.PointLight(c,0.55,40);
-  pl.position.set(Math.cos(i*2.1)*20,6,Math.sin(i*2.1)*20); scene.add(pl);
+  const pl=new THREE.PointLight(c,0.5,40);
+  pl.position.set(Math.cos(i*2.1)*20,6,Math.sin(i*2.1)*20);scene.add(pl);
 });
 
-// ── MAP ───────────────────────────────────────────────────────────────────────
-const collidables = [];
-function addBox(w,h,d,x,y,z,mat){
+// ─── MAP ──────────────────────────────────────────────────────────────────────
+const collidables=[];
+const targets=[];   // {mesh, hp, maxHp, id}
+
+function box(w,h,d,x,y,z,mat,noCollide){
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
-  m.position.set(x,y,z); m.castShadow=m.receiveShadow=true;
-  scene.add(m); collidables.push(m); return m;
+  m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;scene.add(m);
+  if(!noCollide)collidables.push(m);
+  return m;
+}
+
+// Stair-step ramp: builds N stair boxes from (x,z) toward dz/dy direction
+// Each step is walkable flat surfaces – player can walk up them
+function stairRamp(steps,stepW,stepH,stepD,startX,startY,startZ,dz,mat,dx){
+  dx=dx||0;
+  for(let i=0;i<steps;i++){
+    const sx=startX+i*stepD*dx;
+    const sz=startZ+i*stepD*dz;
+    const sy=startY+i*stepH+stepH/2;
+    const bw=dx!==0?stepD:stepW;
+    const bd=dx!==0?stepW:stepD;
+    box(bw,stepH+i*0.001,bd,sx,sy,sz,mat);
+  }
 }
 
 function buildArena(){
-  const floorMat=new THREE.MeshStandardMaterial({color:0xd0d0d8,roughness:0.85,metalness:0.05});
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(120,120),floorMat);
-  floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+  const floorMat=new THREE.MeshStandardMaterial({color:0xd2d2da,roughness:0.85,metalness:0.04});
+  const fl=new THREE.Mesh(new THREE.PlaneGeometry(160,160),floorMat);
+  fl.rotation.x=-Math.PI/2;fl.receiveShadow=true;scene.add(fl);
 
-  const g1=new THREE.GridHelper(120,60,0x8090b0,0x8090b0);
-  g1.position.y=0.01; g1.material.opacity=0.35; g1.material.transparent=true; scene.add(g1);
-  const g2=new THREE.GridHelper(120,240,0x6070a0,0x6070a0);
-  g2.position.y=0.015; g2.material.opacity=0.12; g2.material.transparent=true; scene.add(g2);
+  const g1=new THREE.GridHelper(160,80,0x8090b0,0x8090b0);
+  g1.position.y=0.01;g1.material.opacity=0.32;g1.material.transparent=true;scene.add(g1);
+  const g2=new THREE.GridHelper(160,320,0x6070a0,0x6070a0);
+  g2.position.y=0.015;g2.material.opacity=0.1;g2.material.transparent=true;scene.add(g2);
 
-  const ceil=new THREE.Mesh(new THREE.PlaneGeometry(120,120),new THREE.MeshStandardMaterial({color:0x18181c,roughness:1}));
-  ceil.rotation.x=Math.PI/2; ceil.position.y=22; scene.add(ceil);
+  // Ceiling
+  const ceilM=new THREE.MeshStandardMaterial({color:0x18181c,roughness:1});
+  const ceil=new THREE.Mesh(new THREE.PlaneGeometry(160,160),ceilM);
+  ceil.rotation.x=Math.PI/2;ceil.position.y=24;scene.add(ceil);
 
-  const wM=new THREE.MeshStandardMaterial({color:0xc8c8d0,roughness:0.9,metalness:0.1});
-  [[120,22,1,0,11,-60],[120,22,1,0,11,60],[1,22,120,-60,11,0],[1,22,120,60,11,0]]
-    .forEach(([w,h,d,x,y,z])=>addBox(w,h,d,x,y,z,wM));
+  // Outer walls
+  const wM=new THREE.MeshStandardMaterial({color:0xc0c0c8,roughness:0.9,metalness:0.1});
+  box(160,24,1.2,0,12,-80,wM);box(160,24,1.2,0,12,80,wM);
+  box(1.2,24,160,-80,12,0,wM);box(1.2,24,160,80,12,0,wM);
 
-  const bM=new THREE.MeshStandardMaterial({color:0xbabac8,roughness:0.8,metalness:0.15});
-  const gM=new THREE.MeshStandardMaterial({color:0x6688ff,roughness:0.3,metalness:0.8,emissive:0x2233aa,emissiveIntensity:0.4});
-  const rM=new THREE.MeshStandardMaterial({color:0xa8a8b8,roughness:0.75,metalness:0.1});
+  const bM=new THREE.MeshStandardMaterial({color:0xb8b8c4,roughness:0.8,metalness:0.15});
+  const gM=new THREE.MeshStandardMaterial({color:0x4466ff,roughness:0.3,metalness:0.8,emissive:0x2233aa,emissiveIntensity:0.5});
+  const rM=new THREE.MeshStandardMaterial({color:0x9898a8,roughness:0.75,metalness:0.1});
+  const towerM=new THREE.MeshStandardMaterial({color:0xa0a0b0,roughness:0.7,metalness:0.2});
 
-  // Center island
-  addBox(6,1.2,6,0,.6,0,gM); addBox(3,3,3,0,2.1,0,gM);
-  // Clusters
-  addBox(4,2,2,-18,1,-5,bM); addBox(2,4,2,-22,2,2,bM); addBox(8,1,2,-14,.5,10,bM);
-  addBox(4,2,2,18,1,5,bM);   addBox(2,4,2,22,2,-2,bM); addBox(8,1,2,14,.5,-10,bM);
-  // Far platforms
-  addBox(10,.8,4,0,.4,28,bM); addBox(10,.8,4,0,.4,-28,bM);
-  // Elevated walkways
-  addBox(20,.5,2,0,5,12,bM); addBox(20,.5,2,0,5,-12,bM);
-  addBox(2,.5,20,12,5,0,bM); addBox(2,.5,20,-12,5,0,bM);
-  // Pillars
-  [-8,8].forEach(x=>[-8,8].forEach(z=>addBox(1.5,10,1.5,x,5,z,bM)));
-  // Tall tower
-  addBox(8,8,8,-35,4,0,bM); addBox(8,.5,8,-35,8.25,0,gM);
+  // ── CENTER ISLAND (most used area) ──────────────────────────────────────────
+  box(8,1.2,8,0,0.6,0,gM);      // wide base slab
+  box(4,2.4,4,0,1.8,0,gM);      // mid block
+  box(2,1.2,2,0,3.6,0,gM);      // top cap
 
-  // ── PROPER DIAGONAL RAMP using a rotated box ──────────────────────────────
-  // Ramp from ground to elevated walkway (-12,5,0): spans z from 4 to 9, y from 0 to 5
-  const rampAngle = Math.atan2(5, 5); // ~45 deg
-  const rampLen = Math.sqrt(5*5+5*5);
-  const mkRamp=(w,x,z,rz,ry)=>{
-    const m=new THREE.Mesh(new THREE.BoxGeometry(w,0.45,rampLen+0.2),rM);
-    m.position.set(x,2.5,z); m.rotation.set(-rampAngle,ry,0);
-    m.castShadow=m.receiveShadow=true; scene.add(m); collidables.push(m);
-  };
-  // Left walkway ramp (from z=9 down to z=4 at ground)
-  mkRamp(2.8,-12,6.5,0,0);
-  // Right walkway ramp
-  mkRamp(2.8,12,-6.5,0,Math.PI);
-  // Tower ramp (from z=7 down to ground, facing tower)
-  const tRampAngle=Math.atan2(8,6);
-  const tRampLen=Math.sqrt(8*8+6*6);
-  const tr=new THREE.Mesh(new THREE.BoxGeometry(4,0.45,tRampLen+0.3),rM);
-  tr.position.set(-32,4,0); tr.rotation.set(0,Math.PI/2,0);
-  // vertical ramp to tower
-  const tr2=new THREE.Mesh(new THREE.BoxGeometry(4,0.45,tRampLen),rM);
-  tr2.position.set(-29,4,0); tr2.rotation.set(-tRampAngle,0,0);
-  tr2.castShadow=tr2.receiveShadow=true; scene.add(tr2); collidables.push(tr2);
+  // Center ring cover boxes (around the island, easy to jump onto)
+  const coverAngles=[0,Math.PI/2,Math.PI,Math.PI*1.5];
+  coverAngles.forEach(a=>{
+    const cx=Math.cos(a)*9,cz=Math.sin(a)*9;
+    box(2,1.5,2,cx,0.75,cz,bM);
+  });
 
-  // Corner pads
-  [[-30,-30],[30,-30],[-30,30],[30,30]].forEach(([x,z])=>addBox(6,.4,6,x,.2,z,rM));
+  // ── ELEVATED CROSS WALKWAYS (height 5) ──────────────────────────────────────
+  box(28,0.5,2.5,0,5,0,bM);    // E-W walkway
+  box(2.5,0.5,28,0,5,0,bM);   // N-S walkway
+  // Walkway support pillars
+  [-10,10].forEach(x=>[-10,10].forEach(z=>{
+    box(1.2,5,1.2,x,2.5,z,bM);
+  }));
 
-  // Glow strips
-  for(let i=0;i<8;i++){
-    const a=(i/8)*Math.PI*2;
+  // ── STAIR RAMPS TO ELEVATED WALKWAYS (shallow, 7 steps each) ─────────────
+  // North ramp goes from ground up to walkway at z=-14 side
+  stairRamp(7,3,0.72,1.1, 0,0,-7.5,-1,rM);  // N side
+  stairRamp(7,3,0.72,1.1, 0,0, 7.5, 1,rM);  // S side
+  stairRamp(7,3,0.72,1.1,-4,0,0, 0,rM,1);  // E side going +X
+  stairRamp(7,3,0.72,1.1, 4,0,0,0,rM,-1); // W side going -X
+
+  // ── LEFT CLUSTER (x~-22) ────────────────────────────────────────────────────
+  box(5,2,3,-22,1,-6,bM);
+  box(2,5,2,-26,2.5,2,bM);
+  box(10,0.8,3,-18,0.4,12,bM);
+  // Ramp to left cluster box: 5 steps
+  stairRamp(5,2.5,0.4,1,-22,0,-11,1,rM);
+
+  // ── RIGHT CLUSTER (x~22) ─────────────────────────────────────────────────
+  box(5,2,3,22,1,6,bM);
+  box(2,5,2,26,2.5,-2,bM);
+  box(10,0.8,3,18,0.4,-12,bM);
+  // Ramp to right cluster
+  stairRamp(5,2.5,0.4,1,22,0,11,-1,rM);
+
+  // ── FAR PLATFORMS ────────────────────────────────────────────────────────────
+  box(12,1,5,0,0.5,32,bM);
+  box(12,1,5,0,0.5,-32,bM);
+  // Side far platforms
+  box(5,1,10,35,0.5,0,bM);
+  box(5,1,10,-35,0.5,0,bM);
+
+  // ── TALL TOWER (left side, x=-38) ────────────────────────────────────────
+  box(7,10,7,-38,5,0,towerM);          // main tower body
+  box(9,0.6,9,-38,10.3,0,gM);          // glowing top cap
+  // Stairs up the tower: 10 steps, each 1m tall, running along Z
+  stairRamp(10,3.5,1.0,1.1,-38,0,-4.5,-1,rM);
+
+  // ── UPPER SNIPER LEDGE (right side, x=38) ────────────────────────────────
+  box(6,8,6,38,4,0,towerM);
+  box(8,0.6,8,38,8.3,0,gM);
+  // Stairs up right tower
+  stairRamp(8,3.5,1.0,1.1,38,0,3.5,1,rM);
+
+  // ── MID ELEVATED BOXES (height ~3, scattered) ───────────────────────────
+  box(4,3,4,-14,1.5,-18,bM);
+  box(4,3,4,14,1.5,18,bM);
+  box(3,3,3,-14,1.5,18,bM);
+  box(3,3,3,14,1.5,-18,bM);
+
+  // ── CORNER ARENA FILLERS ──────────────────────────────────────────────────
+  [[-50,-50],[50,-50],[-50,50],[50,50]].forEach(([cx,cz])=>{
+    box(8,0.5,8,cx,0.25,cz,rM);    // corner pad
+    box(2,3,2,cx,1.5,cz,bM);       // corner post
+  });
+
+  // ── DECORATIVE GLOW STRIPS ────────────────────────────────────────────────
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2;
     const lm=new THREE.MeshStandardMaterial({color:0x88aaff,emissive:0x4466ee,emissiveIntensity:1.5,roughness:.1,metalness:1});
-    const lmesh=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.08,20),lm);
-    lmesh.position.set(Math.cos(a)*24,0.05,Math.sin(a)*24); lmesh.rotation.y=a; scene.add(lmesh);
+    const lmesh=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.08,18),lm);
+    lmesh.position.set(Math.cos(a)*28,0.05,Math.sin(a)*28);lmesh.rotation.y=a;scene.add(lmesh);
+  }
+
+  // ── SPAWN TARGETS ─────────────────────────────────────────────────────────
+  const targetPositions=[
+    [0,2.8,18],[0,2.8,-18],
+    [18,2.8,0],[-18,2.8,0],
+    [10,1.5,10],[-10,1.5,-10],
+    [10,1.5,-10],[-10,1.5,10],
+    [0,2.8,32],[0,2.8,-32],
+    [35,1.5,0],[-35,1.5,0],
+    [22,4,22],[-22,4,-22],
+  ];
+  targetPositions.forEach((pos,i)=>spawnTarget(pos[0],pos[1],pos[2],i));
+}
+
+let targetIdCounter=0;
+function spawnTarget(x,y,z,id){
+  const g=new THREE.Group();
+  // Pole
+  const pole=new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06,0.06,1.6,8),
+    new THREE.MeshStandardMaterial({color:0x444455,roughness:0.7})
+  );
+  pole.position.y=-0.8;g.add(pole);
+  // Target disc
+  const disc=new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55,0.55,0.12,16),
+    new THREE.MeshStandardMaterial({color:0xff3322,roughness:0.5,emissive:0x661100,emissiveIntensity:0.3})
+  );
+  disc.rotation.x=Math.PI/2;g.add(disc);
+  // Inner ring
+  const inner=new THREE.Mesh(
+    new THREE.CylinderGeometry(0.25,0.25,0.13,12),
+    new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.4})
+  );
+  inner.rotation.x=Math.PI/2;inner.position.z=0.01;g.add(inner);
+  // Bull
+  const bull=new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1,0.1,0.14,10),
+    new THREE.MeshStandardMaterial({color:0xff3322,roughness:0.4,emissive:0xaa0000,emissiveIntensity:0.5})
+  );
+  bull.rotation.x=Math.PI/2;bull.position.z=0.02;g.add(bull);
+
+  g.position.set(x,y,z);
+  scene.add(g);
+  const t={group:g,disc,id:id??targetIdCounter++,alive:true,resetTimer:0};
+  targets.push(t);
+  // Register disc as collidable for raycasting separately
+  disc.userData.targetRef=t;
+  inner.userData.targetRef=t;
+  bull.userData.targetRef=t;
+  return t;
+}
+
+function hitTarget(t,zone){
+  if(!t.alive)return;
+  // Animate: tip the target back and flash
+  t.alive=false;
+  t.resetTimer=3.5; // seconds until it resets upright
+  // Tip back with a tween via userData
+  t.group.userData.falling=true;
+  t.group.userData.fallT=0;
+
+  const label=zone==='bull'?'BULLSEYE ⚡':zone==='inner'?'HIT ✓':'GRAZE';
+  const color=zone==='bull'?'#ffdd00':zone==='inner'?'#00ff88':'#ffffff';
+  addKillFeed(label,color);
+}
+
+function addKillFeed(text,color='#ffffff'){
+  const feed=document.getElementById('kill-feed');
+  const el=document.createElement('div');
+  el.className='kf-entry';
+  el.style.borderColor=color+'66';
+  el.style.color=color;
+  el.textContent=text;
+  feed.prepend(el);
+  setTimeout(()=>el.classList.add('fade'),1800);
+  setTimeout(()=>el.remove(),2200);
+}
+
+function updateTargets(dt){
+  for(const t of targets){
+    if(t.group.userData.falling){
+      t.group.userData.fallT=Math.min(1,t.group.userData.fallT+dt*4);
+      t.group.rotation.x=t.group.userData.fallT*(Math.PI/2);
+    }
+    if(!t.alive){
+      t.resetTimer-=dt;
+      if(t.resetTimer<=0){
+        t.alive=true;
+        t.group.userData.falling=false;
+        t.group.userData.fallT=0;
+        t.group.rotation.x=0;
+      }
+    }
   }
 }
 
-// ── ARM + WEAPON VIEWMODEL ────────────────────────────────────────────────────
-// The viewmodel group is parented to camera
-const viewmodelGroup = new THREE.Group();
-camera.add(viewmodelGroup);
+// ─── VIEWMODEL (arm + weapon, parented to camera) ────────────────────────────
 scene.add(camera);
+const vmGroup=new THREE.Group(); // whole viewmodel
+camera.add(vmGroup);
+const wepPivot=new THREE.Group(); // weapon animation pivot
+vmGroup.add(wepPivot);
 
-// Shared arm materials
-const armMat  = new THREE.MeshStandardMaterial({ color: 0x333338, roughness: 0.6, metalness: 0.1 }); // dark grey sleeve
-const handMat = new THREE.MeshStandardMaterial({ color: 0xc8a882, roughness: 0.7, metalness: 0.0 }); // light skin
+// Materials
+const armSleeveM=new THREE.MeshStandardMaterial({color:0x2a2a30,roughness:0.65,metalness:0.1});
+const handSkinM =new THREE.MeshStandardMaterial({color:0xc49a6c,roughness:0.7,metalness:0.0});
 
-function makeArm() {
-  // Returns a group: upper arm + forearm + hand, oriented so "hand" is at +Z tip
-  const g = new THREE.Group();
+function makeViewArm(){
+  // Single arm visible from player POV: sleeve goes off bottom-right of screen
+  // The arm root is at the camera's right-bottom, weapon at the tip
+  const g=new THREE.Group();
 
-  // Upper arm (connects from off-screen up to elbow)
-  const upper = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.28), armMat);
-  upper.position.set(0, 0, -0.14); // centered behind origin
-  g.add(upper);
-
-  // Forearm
-  const fore = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.22), armMat);
-  fore.position.set(0, 0, 0.11);
+  // Lower forearm (the part you see)
+  const fore=new THREE.Mesh(new THREE.BoxGeometry(0.085,0.085,0.26),armSleeveM);
+  fore.position.set(0,0,0);
   g.add(fore);
 
-  // Wrist/hand transition knuckle block
-  const wrist = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.055, 0.06), handMat);
-  wrist.position.set(0, -0.005, 0.25);
+  // Wrist (transitions to hand)
+  const wrist=new THREE.Mesh(new THREE.BoxGeometry(0.078,0.07,0.07),handSkinM);
+  wrist.position.set(0,-0.005,0.165);
   g.add(wrist);
 
-  // Fingers (4 small boxes)
-  for (let i = 0; i < 4; i++) {
-    const fx = (i - 1.5) * 0.018;
-    const finger = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.012, 0.045), handMat);
-    finger.position.set(fx, -0.012, 0.295);
-    g.add(finger);
-  }
+  // Hand / grip block
+  const hand=new THREE.Mesh(new THREE.BoxGeometry(0.072,0.065,0.055),handSkinM);
+  hand.position.set(0,-0.006,0.21);
+  g.add(hand);
 
+  // 4 finger nubs
+  for(let i=0;i<4;i++){
+    const f=new THREE.Mesh(new THREE.BoxGeometry(0.016,0.014,0.032),handSkinM);
+    f.position.set((i-1.5)*0.019,-0.014,0.24);
+    g.add(f);
+  }
   // Thumb
-  const thumb = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.028, 0.018), handMat);
-  thumb.position.set(-0.046, -0.008, 0.256);
-  thumb.rotation.z = -0.4;
-  g.add(thumb);
+  const th=new THREE.Mesh(new THREE.BoxGeometry(0.015,0.032,0.016),handSkinM);
+  th.position.set(-0.044,-0.006,0.21);th.rotation.z=-0.35;
+  g.add(th);
 
   return g;
 }
 
-// Right arm — shared across all weapons, always visible in viewmodel
-const rightArm = makeArm();
-viewmodelGroup.add(rightArm);
+// One arm instance, reused by all weapons
+const viewArm=makeViewArm();
+vmGroup.add(viewArm);
 
-// Weapon pivot (child of viewmodelGroup, weapon meshes attach here)
-const weaponPivot = new THREE.Group();
-viewmodelGroup.add(weaponPivot);
-
-// Build individual weapon meshes (no arm included)
-function makeKnifeMesh() {
-  const g = new THREE.Group();
-  const handleMat = new THREE.MeshStandardMaterial({color:0x2a1a0a,roughness:0.9});
-  const metalMat  = new THREE.MeshStandardMaterial({color:0x888888,metalness:0.9,roughness:0.2});
-  const bladeMat  = new THREE.MeshStandardMaterial({color:0xd0d0d0,metalness:0.95,roughness:0.08});
-  const shineMat  = new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:0.6});
-
-  const handle = new THREE.Mesh(new THREE.BoxGeometry(0.038,0.038,0.17),handleMat);
-  g.add(handle);
-  const guard = new THREE.Mesh(new THREE.BoxGeometry(0.085,0.017,0.017),metalMat);
-  guard.position.z=0.09; g.add(guard);
-
-  const pts=[new THREE.Vector2(0,0),new THREE.Vector2(0.011,0),new THREE.Vector2(0.007,0.21),new THREE.Vector2(0,0.23)];
-  const blade=new THREE.Mesh(new THREE.ExtrudeGeometry(new THREE.Shape(pts),{depth:0.003,bevelEnabled:false}),bladeMat);
-  blade.position.set(-0.005,-0.011,0.1); g.add(blade);
-
-  const shine=new THREE.Mesh(new THREE.BoxGeometry(0.001,0.21,0.001),shineMat);
-  shine.position.set(0.012,0.095,0.1); g.add(shine);
-  return g;
-}
-
-function makePistolMesh() {
-  const g = new THREE.Group();
-  const mat   =new THREE.MeshStandardMaterial({color:0x1a1a1a,metalness:0.7,roughness:0.4});
-  const silver=new THREE.MeshStandardMaterial({color:0x888888,metalness:0.9,roughness:0.2});
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.06,0.1,0.18),mat));
-  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.22,8),silver);
-  barrel.rotation.x=Math.PI/2; barrel.position.set(0,0.024,0.2); g.add(barrel);
-  const grip=new THREE.Mesh(new THREE.BoxGeometry(0.055,0.12,0.06),mat);
-  grip.position.set(0,-0.09,-0.04); grip.rotation.x=0.2; g.add(grip);
-  const tg=new THREE.Mesh(new THREE.TorusGeometry(0.022,0.005,6,12,Math.PI),mat);
-  tg.position.set(0,-0.03,0.04); tg.rotation.x=Math.PI/2; g.add(tg);
-  return g;
-}
-
-function makeRifleMesh() {
-  const g = new THREE.Group();
-  const mat =new THREE.MeshStandardMaterial({color:0x111111,metalness:0.6,roughness:0.5});
+// Weapon meshes (attached to wepPivot)
+function makeRifleMesh(){
+  const g=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:0x111111,metalness:0.6,roughness:0.5});
   const wood=new THREE.MeshStandardMaterial({color:0x3a200a,roughness:0.9});
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.055,0.065,0.5),mat));
-  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.35,8),mat);
-  barrel.rotation.x=Math.PI/2; barrel.position.set(0,0.01,0.42); g.add(barrel);
-  const stock=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.07,0.2),wood);
-  stock.position.set(0,-0.01,-0.32); g.add(stock);
-  const grip=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.1,0.05),mat);
-  grip.position.set(0,-0.075,-0.08); grip.rotation.x=0.25; g.add(grip);
-  const mag=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.1,0.04),mat);
-  mag.position.set(0,-0.07,0.05); g.add(mag);
-  const rail=new THREE.Mesh(new THREE.BoxGeometry(0.01,0.01,0.3),mat);
-  rail.position.set(0,0.038,0.2); g.add(rail);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(0.055,0.065,0.48),mat);
+  g.add(body);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.011,0.011,0.38,8),mat);
+  barrel.rotation.x=Math.PI/2;barrel.position.set(0,0.01,0.43);g.add(barrel);
+  const stock=new THREE.Mesh(new THREE.BoxGeometry(0.048,0.068,0.18),wood);
+  stock.position.set(0,-0.01,-0.31);g.add(stock);
+  const grip=new THREE.Mesh(new THREE.BoxGeometry(0.038,0.1,0.048),mat);
+  grip.position.set(0,-0.075,-0.07);grip.rotation.x=0.24;g.add(grip);
+  const mag=new THREE.Mesh(new THREE.BoxGeometry(0.038,0.1,0.038),mat);
+  mag.position.set(0,-0.07,0.04);g.add(mag);
+  const rail=new THREE.Mesh(new THREE.BoxGeometry(0.01,0.01,0.28),mat);
+  rail.position.set(0,0.036,0.18);g.add(rail);
   return g;
 }
 
-const weaponMeshes = { rifle: makeRifleMesh(), pistol: makePistolMesh(), knife: makeKnifeMesh() };
-Object.values(weaponMeshes).forEach(w => { w.visible = false; weaponPivot.add(w); });
+function makePistolMesh(){
+  const g=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:0x1a1a1a,metalness:0.7,roughness:0.4});
+  const sil=new THREE.MeshStandardMaterial({color:0x888888,metalness:0.9,roughness:0.2});
+  const body=new THREE.Mesh(new THREE.BoxGeometry(0.058,0.098,0.17),mat);
+  g.add(body);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.011,0.011,0.2,8),sil);
+  barrel.rotation.x=Math.PI/2;barrel.position.set(0,0.022,0.19);g.add(barrel);
+  const grip=new THREE.Mesh(new THREE.BoxGeometry(0.052,0.115,0.058),mat);
+  grip.position.set(0,-0.09,-0.038);grip.rotation.x=0.2;g.add(grip);
+  const tg=new THREE.Mesh(new THREE.TorusGeometry(0.02,0.005,6,12,Math.PI),mat);
+  tg.position.set(0,-0.028,0.038);tg.rotation.x=Math.PI/2;g.add(tg);
+  return g;
+}
 
-// ARM + WEAPON BASE TRANSFORMS per weapon
-// pos = viewmodel group local position, armOffset = arm position relative to group
-const viewOffsets = {
-  // [group pos, group rot, arm local pos, arm local rot, weapon local pos, weapon local rot]
+function makeKnifeMesh(){
+  const g=new THREE.Group();
+  const hM=new THREE.MeshStandardMaterial({color:0x2a1a0a,roughness:0.9});
+  const mM=new THREE.MeshStandardMaterial({color:0x888888,metalness:0.9,roughness:0.2});
+  const bM=new THREE.MeshStandardMaterial({color:0xd8d8d8,metalness:0.95,roughness:0.08});
+  const sM=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:0.7});
+
+  const handle=new THREE.Mesh(new THREE.BoxGeometry(0.036,0.036,0.15),hM);
+  handle.position.set(0,0,-0.075);g.add(handle); // handle behind pivot
+  const guard=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.016,0.016),mM);
+  guard.position.set(0,0,0.0);g.add(guard);
+
+  // Blade: extruded shape pointing forward (+Z)
+  const pts=[new THREE.Vector2(0,0),new THREE.Vector2(0.01,0),new THREE.Vector2(0.006,0.19),new THREE.Vector2(0,0.205)];
+  const bladeGeo=new THREE.ExtrudeGeometry(new THREE.Shape(pts),{depth:0.003,bevelEnabled:false});
+  const blade=new THREE.Mesh(bladeGeo,bM);
+  blade.position.set(-0.005,-0.01,0.01);g.add(blade);
+
+  const shine=new THREE.Mesh(new THREE.BoxGeometry(0.001,0.195,0.001),sM);
+  shine.position.set(0.01,0.09,0.01);g.add(shine);
+  return g;
+}
+
+const wepMeshes={rifle:makeRifleMesh(),pistol:makePistolMesh(),knife:makeKnifeMesh()};
+Object.values(wepMeshes).forEach(w=>{w.visible=false;wepPivot.add(w);});
+
+// Per-weapon viewmodel transform: where the whole vmGroup sits relative to camera
+// arm tip should be at weapon grip
+const VM={
   rifle: {
-    groupPos: new THREE.Vector3(0.22,-0.28,-0.5),
-    groupRot: new THREE.Euler(0,0,0),
-    armPos:   new THREE.Vector3(0,0,0.08),
-    armRot:   new THREE.Euler(-0.18,0,0.12),
-    wepPos:   new THREE.Vector3(0,0.03,0),
-    wepRot:   new THREE.Euler(0,0,0),
+    gx:0.19, gy:-0.25, gz:-0.44,   // vmGroup local pos
+    ax:0,    ay:0,     az:0,        // vmGroup rotation
+    px:0,    py:0.02,  pz:0,        // wepPivot extra offset
+    pr:0,    prY:0,    prZ:0,       // wepPivot rotation
   },
-  pistol: {
-    groupPos: new THREE.Vector3(0.2,-0.26,-0.38),
-    groupRot: new THREE.Euler(0,0,0),
-    armPos:   new THREE.Vector3(0,0,0.04),
-    armRot:   new THREE.Euler(-0.12,0,0.1),
-    wepPos:   new THREE.Vector3(0,0.04,-0.02),
-    wepRot:   new THREE.Euler(0,0,0),
+  pistol:{
+    gx:0.17, gy:-0.23, gz:-0.36,
+    ax:0,    ay:0,     az:0,
+    px:0,    py:0.02,  pz:0,
+    pr:0,    prY:0,    prZ:0,
   },
-  knife: {
-    groupPos: new THREE.Vector3(0.16,-0.22,-0.32),
-    groupRot: new THREE.Euler(0,0,0),
-    armPos:   new THREE.Vector3(0,0,-0.02),
-    armRot:   new THREE.Euler(-0.1,0.1,0.15),
-    wepPos:   new THREE.Vector3(0.01,0.04,0.2),
-    wepRot:   new THREE.Euler(-0.3,2.8,0.3),
+  knife:{
+    gx:0.15, gy:-0.20, gz:-0.3,
+    ax:-0.08,ay:0,     az:0.1,
+    px:0,    py:0.02,  pz:0.18,     // knife blade extends forward from hand
+    pr:-0.25,prY:2.85, prZ:0.2,
   },
 };
 
-// ── ANIMATION STATE ───────────────────────────────────────────────────────────
-const anim = {
-  swapT:      0,   // 0=done 1=start of swap
-  slashT:     0,   // LMB slash/stab timer 0..1
-  slashType:  0,   // 0=stab 1=swing-right 2=swing-left
-  rmbSlashT:  0,   // RMB slash timer
-  inspectT:   0,   // inspect timer (0..INSPECT_DUR)
-  inspecting: false,
-  tossingKnife: false,
-  tossT:      0,
-  // recoil
-  recoilPitch: 0,
-  recoilRoll:  0,
+// ─── ANIMATION STATE ──────────────────────────────────────────────────────────
+let bobT=0;
+const AN={
+  swapT:0,
+  slashT:0, slashSide:0,
+  rmbT:0,
+  tossT:0, tossing:false,
+  inspT:0, inspecting:false,
+  recoilP:0, recoilR:0,
 };
-const INSPECT_DUR = 1.9;
-const TOSS_DUR    = 1.2;
+const TOSS_DUR=1.4, INSP_DUR=1.8;
 
-let bobTime = 0;
-
-function doInspect() {
-  if (anim.inspecting || anim.tossingKnife) return;
-  if (player.weapon === 'knife') {
-    anim.tossingKnife = true;
-    anim.tossT = TOSS_DUR;
-  } else {
-    anim.inspecting = true;
-    anim.inspectT = INSPECT_DUR;
-  }
+function doInspect(){
+  if(AN.tossing||AN.inspecting)return;
+  if(player.weapon==='knife'){AN.tossing=true;AN.tossT=TOSS_DUR;}
+  else{AN.inspecting=true;AN.inspT=INSP_DUR;}
   document.getElementById('inspect-label').classList.add('show');
-  setTimeout(()=>document.getElementById('inspect-label').classList.remove('show'), 500);
+  setTimeout(()=>document.getElementById('inspect-label').classList.remove('show'),600);
+}
+function doKnifeLMB(){AN.slashT=1;AN.slashSide=(AN.slashSide+1)%2;}
+function doKnifeRMB(){AN.rmbT=1;}
+
+function updateViewmodel(dt,hs){
+  const v=VM[player.weapon];
+  const wep=wepMeshes[player.weapon];
+  Object.values(wepMeshes).forEach(w=>w.visible=false);
+  wep.visible=true;
+
+  // Bob
+  const moving=hs>1.5;
+  if(moving)bobT+=dt*9;
+  const bx=moving?Math.sin(bobT)*0.013:0;
+  const by=moving?Math.abs(Math.sin(bobT))*0.008:0;
+
+  // Swap drop
+  let sy=0;
+  if(AN.swapT>0){AN.swapT=Math.max(0,AN.swapT-dt*7);sy=Math.sin(AN.swapT*Math.PI)*0.16;}
+
+  // Knife LMB slash (alternating left/right arc)
+  let sRoll=0,sPitch=0;
+  if(AN.slashT>0){
+    AN.slashT=Math.max(0,AN.slashT-dt*5.5);
+    const arc=Math.sin((1-AN.slashT)*Math.PI);
+    sRoll=(AN.slashSide===0?1:-1)*arc*1.3;
+    sPitch=arc*0.35;
+  }
+
+  // RMB overhead chop
+  let rP=0,rY2=0;
+  if(AN.rmbT>0){
+    AN.rmbT=Math.max(0,AN.rmbT-dt*5);
+    const arc=Math.sin((1-AN.rmbT)*Math.PI);
+    rP=arc*1.0; rY2=arc*-0.3;
+  }
+
+  // Knife toss inspect
+  let tossY=0,tossR=0,tossScale=1;
+  if(AN.tossing){
+    AN.tossT=Math.max(0,AN.tossT-dt);
+    const p=(TOSS_DUR-AN.tossT)/TOSS_DUR; // 0→1 progress
+    if(p<0.3){
+      const sub=p/0.3;
+      tossY=sub*0.22;tossR=sub*Math.PI*2.5;tossScale=1+sub*0.1;
+    } else if(p<0.6){
+      tossScale=0; // knife "in air"
+    } else {
+      const sub=(p-0.6)/0.4;
+      tossY=(1-sub)*0.15;tossR=(1-sub)*Math.PI;tossScale=sub;
+    }
+    if(AN.tossT<=0)AN.tossing=false;
+  }
+
+  // Gun inspect figure-8
+  let iR=0,iP=0,iYaw=0,iX=0;
+  if(AN.inspecting){
+    AN.inspT=Math.max(0,AN.inspT-dt);
+    if(AN.inspT<=0)AN.inspecting=false;
+    const t=1-AN.inspT/INSP_DUR;
+    iR=Math.sin(t*Math.PI*2)*0.48;
+    iP=Math.sin(t*Math.PI*4)*0.2;
+    iYaw=Math.sin(t*Math.PI)*0.28;
+    iX=Math.sin(t*Math.PI*2)*0.045;
+  }
+
+  // Knife idle float
+  const idleY=player.weapon==='knife'?Math.sin(Date.now()*0.0012)*0.005:0;
+
+  // Recoil recovery
+  AN.recoilP+=-AN.recoilP*Math.min(1,8*dt);
+  AN.recoilR+=-AN.recoilR*Math.min(1,10*dt);
+
+  // Apply vmGroup
+  vmGroup.position.set(v.gx+bx+iX, v.gy+by-sy+idleY+tossY, v.gz);
+  vmGroup.rotation.set(v.ax+iP+AN.recoilP, v.ay+iYaw, v.az+iR+AN.recoilR);
+
+  // Arm always shows at same position within vmGroup
+  viewArm.position.set(0,0,0);
+  viewArm.rotation.set(0,0,0);
+  // slight strafe lean
+  const strafe=(keys['KeyA']?1:0)-(keys['KeyD']?1:0);
+  viewArm.rotation.z=strafe*0.055;
+
+  // Weapon pivot
+  wepPivot.position.set(v.px,v.py,v.pz);
+  wepPivot.rotation.set(v.pr,v.prY,v.prZ);
+
+  if(player.weapon==='knife'){
+    wepPivot.rotation.x+=sPitch+rP;
+    wepPivot.rotation.z+=sRoll;
+    wepPivot.rotation.y+=rY2;
+    wepPivot.scale.setScalar(tossScale);
+  } else {
+    wepPivot.scale.setScalar(1);
+  }
+  // Reset weapon mesh local transform (pivot handles everything)
+  wep.position.set(0,0,0);
+  wep.rotation.set(0,0,0);
+  wep.scale.set(1,1,1);
 }
 
-// Knife LMB: stab / alternating slash
-let slashSide = 0;
-function doKnifeAttack() {
-  anim.slashT = 1;
-  anim.slashType = slashSide % 2 === 0 ? 1 : 2;
-  slashSide++;
-}
-function doKnifeRMB() {
-  anim.rmbSlashT = 1;
-}
-
-// ── BULLET MARKS (decals via small flat quads on surfaces) ────────────────────
-const bulletMarks = [];
-const MARK_MAT = new THREE.MeshBasicMaterial({ color: 0x111111, depthWrite: false, transparent: true, opacity: 0.85, polygonOffset: true, polygonOffsetFactor: -1 });
-
-function spawnBulletMark(point, normal) {
-  // Tiny quad aligned to surface normal
-  const geo = new THREE.PlaneGeometry(0.08, 0.08);
-  const mesh = new THREE.Mesh(geo, MARK_MAT.clone());
-  mesh.position.copy(point).addScaledVector(normal, 0.005);
-  // Orient plane to face along normal
-  const up = Math.abs(normal.y) < 0.9 ? new THREE.Vector3(0,1,0) : new THREE.Vector3(1,0,0);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), normal);
-  // Random rotation around normal
-  mesh.rotateOnAxis(normal, Math.random()*Math.PI*2);
-  scene.add(mesh);
-  bulletMarks.push({ mesh, life: 12 }); // 12 seconds
-  // limit
-  if (bulletMarks.length > 60) {
-    const old = bulletMarks.shift();
-    scene.remove(old.mesh);
+// ─── SPARKS & BULLET MARKS ────────────────────────────────────────────────────
+const sparks=[];
+function spawnSparks(pt){
+  const mat=new THREE.MeshBasicMaterial({color:0xffcc44,transparent:true});
+  for(let i=0;i<5;i++){
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.02,4,4),mat.clone());
+    s.position.copy(pt);scene.add(s);
+    sparks.push({mesh:s,vel:new THREE.Vector3((Math.random()-.5)*5,Math.random()*3+1,(Math.random()-.5)*5),life:0.2});
   }
 }
-function updateBulletMarks(dt) {
-  for (let i = bulletMarks.length-1; i >= 0; i--) {
-    const bm = bulletMarks[i];
-    bm.life -= dt;
-    if (bm.life < 2) bm.mesh.material.opacity = Math.max(0, (bm.life/2)*0.85);
-    if (bm.life <= 0) { scene.remove(bm.mesh); bulletMarks.splice(i,1); }
-  }
-}
-
-// ── HIT SPARKS ────────────────────────────────────────────────────────────────
-const sparks = [];
-function spawnSparks(point) {
-  const mat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true});
-  for (let i=0; i<6; i++) {
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.022,4,4), mat.clone());
-    s.position.copy(point);
-    scene.add(s);
-    sparks.push({ mesh:s, vel:new THREE.Vector3((Math.random()-.5)*5,Math.random()*3+1,(Math.random()-.5)*5), life:0.22 });
-  }
-}
-function updateSparks(dt) {
-  for (let i=sparks.length-1; i>=0; i--) {
-    const sp=sparks[i]; sp.life-=dt; sp.vel.y-=14*dt;
+function updateSparks(dt){
+  for(let i=sparks.length-1;i>=0;i--){
+    const sp=sparks[i];sp.life-=dt;sp.vel.y-=14*dt;
     sp.mesh.position.addScaledVector(sp.vel,dt);
-    sp.mesh.material.opacity=Math.max(0,sp.life/0.22);
-    if (sp.life<=0) { scene.remove(sp.mesh); sparks.splice(i,1); }
+    sp.mesh.material.opacity=Math.max(0,sp.life/0.2);
+    if(sp.life<=0){scene.remove(sp.mesh);sparks.splice(i,1);}
   }
 }
 
-// ── AMMO ──────────────────────────────────────────────────────────────────────
-const ammoState = { rifle:{ammo:30,reserve:90}, pistol:{ammo:12,reserve:48}, knife:{ammo:-1,reserve:-1} };
-let reloading=false, reloadTimer=0;
-function updateAmmoHUD(){
-  const wc=WEAPON_CONFIGS[player.weapon], st=ammoState[player.weapon];
-  const cur=document.getElementById('ammo-current'), res=document.getElementById('ammo-reserve');
-  if(wc.ammo===-1){cur.textContent='—';res.textContent='';}
-  else{cur.textContent=st.ammo;res.textContent='/ '+st.reserve;}
+const marks=[];
+const markMat=new THREE.MeshBasicMaterial({color:0x111111,depthWrite:false,transparent:true,opacity:0.82,polygonOffset:true,polygonOffsetFactor:-1});
+function spawnMark(pt,normal){
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(0.09,0.09),markMat.clone());
+  m.position.copy(pt).addScaledVector(normal,0.006);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),normal.clone().normalize());
+  m.rotateOnAxis(normal,Math.random()*Math.PI*2);
+  scene.add(m);marks.push({mesh:m,life:15});
+  if(marks.length>80){const o=marks.shift();scene.remove(o.mesh);}
 }
+function updateMarks(dt){
+  for(let i=marks.length-1;i>=0;i--){
+    const bm=marks[i];bm.life-=dt;
+    if(bm.life<2)bm.mesh.material.opacity=Math.max(0,(bm.life/2)*0.82);
+    if(bm.life<=0){scene.remove(bm.mesh);marks.splice(i,1);}
+  }
+}
+
+// ─── AMMO (INFINITE MAGS) ─────────────────────────────────────────────────────
+// Ammo resets to full on reload — effectively infinite magazines
+const AMMO_MAX={rifle:30,pistol:12,knife:-1};
+const ammoState={rifle:{ammo:30},pistol:{ammo:12},knife:{ammo:-1}};
+let reloading=false,reloadTimer=0;
+
+function updateAmmoHUD(){
+  const cur=document.getElementById('ammo-current');
+  const res=document.getElementById('ammo-reserve');
+  const wep=player.weapon;
+  if(wep==='knife'){cur.textContent='—';res.textContent='';}
+  else{cur.textContent=ammoState[wep].ammo;res.textContent='/ ∞';}
+}
+
 function startReload(){
   if(reloading)return;
-  const wc=WEAPON_CONFIGS[player.weapon]; if(wc.ammo===-1)return;
-  const st=ammoState[player.weapon]; if(st.ammo>=wc.ammo||st.reserve===0)return;
-  reloading=true; reloadTimer=player.weapon==='rifle'?2.1:1.4;
+  const wep=player.weapon;
+  if(wep==='knife')return;
+  if(ammoState[wep].ammo>=AMMO_MAX[wep])return;
+  reloading=true;
+  reloadTimer=wep==='rifle'?1.8:1.2;
   document.getElementById('reload-msg').classList.add('show');
 }
 
-// ── PLAYER ────────────────────────────────────────────────────────────────────
-const player = {
-  pos: new THREE.Vector3(0,PLAYER_HEIGHT,5), vel: new THREE.Vector3(),
-  yaw:0, pitch:0, onGround:false, touchingWall:false,
-  wallNormal:new THREE.Vector3(), wallJumps:0,
-  sliding:false, slideTimer:0, crouching:false,
-  weapon:'knife', weaponPrev:'knife', swapAnim:0,
+// ─── PLAYER STATE ─────────────────────────────────────────────────────────────
+const player={
+  pos:new THREE.Vector3(0,PLAYER_H,8),
+  vel:new THREE.Vector3(),
+  yaw:0,pitch:0,
+  onGround:false,
+  touchingWall:false,
+  wallNormal:new THREE.Vector3(),
+  wallJumps:0,
+  sliding:false,slideTimer:0,
+  weapon:'knife',weaponPrev:'knife',
 };
 const keys={};
-let mouseDX=0, mouseDY=0, locked=false;
-let shotCooldown=0, lmbDown=false;
+let mouseDX=0,mouseDY=0,locked=false;
+let shotCooldown=0,lmbDown=false;
 
-// ── WEAPON SWITCH ─────────────────────────────────────────────────────────────
+// ─── WEAPON SWITCH ────────────────────────────────────────────────────────────
 const slotEls={'1':document.getElementById('slot-1'),'2':document.getElementById('slot-2'),'3':document.getElementById('slot-3')};
-const weaponNames={'1':'rifle','2':'pistol','3':'knife'};
+const wepByKey={'1':'rifle','2':'pistol','3':'knife'};
 
 function setWeapon(name){
   if(player.weapon===name)return;
   if(reloading){reloading=false;document.getElementById('reload-msg').classList.remove('show');}
-  player.weaponPrev=player.weapon; player.weapon=name;
-  anim.swapT=1; anim.inspecting=false; anim.tossingKnife=false;
+  player.weaponPrev=player.weapon;player.weapon=name;
+  AN.swapT=1;AN.inspecting=false;AN.tossing=false;
   Object.values(slotEls).forEach(el=>el.classList.remove('active'));
-  const k=Object.entries(weaponNames).find(([,v])=>v===name)?.[0];
+  const k=Object.entries(wepByKey).find(([,v])=>v===name)?.[0];
   if(k)slotEls[k].classList.add('active');
   document.getElementById('knife-boost').classList.toggle('show',name==='knife');
   document.getElementById('tag-fast').classList.toggle('active',name==='knife');
-  updateAmmoHUD();
   document.querySelectorAll('.buy-item').forEach(el=>el.classList.toggle('equipped',el.dataset.weapon===name));
+  updateAmmoHUD();
 }
 setWeapon('knife');
 
-// ── SHOOT ─────────────────────────────────────────────────────────────────────
-let shootFlashTO=null;
-let hitMarkTO=null;
-
+// ─── SHOOT ────────────────────────────────────────────────────────────────────
+let flashTO=null,hitTO=null;
 function shoot(){
-  const wc=WEAPON_CONFIGS[player.weapon], st=ammoState[player.weapon];
-  if(player.weapon==='knife'){ doKnifeAttack(); return; }
+  const wep=player.weapon;
+  if(wep==='knife'){doKnifeLMB();return;}
   if(reloading)return;
+  const st=ammoState[wep];
   if(st.ammo<=0){startReload();return;}
   if(shotCooldown>0)return;
+
+  const wc=WEAPON_CONFIGS[wep];
   shotCooldown=60/wc.rpm;
-  st.ammo=Math.max(0,st.ammo-1); updateAmmoHUD();
-  anim.recoilPitch-=wc.recoil;
-  anim.recoilRoll+=(Math.random()-.5)*wc.recoil*0.5;
+  st.ammo--;updateAmmoHUD();
+  AN.recoilP-=wc.recoil;
+  AN.recoilR+=(Math.random()-.5)*wc.recoil*0.45;
 
   const sf=document.getElementById('shoot-flash');
-  sf.classList.add('flash'); clearTimeout(shootFlashTO);
-  shootFlashTO=setTimeout(()=>sf.classList.remove('flash'),55);
+  sf.classList.add('flash');clearTimeout(flashTO);
+  flashTO=setTimeout(()=>sf.classList.remove('flash'),55);
 
+  // Raycast
   const dir=new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(player.pitch,player.yaw,0,'YXZ'));
-  const ray=new THREE.Raycaster(camera.position.clone(),dir,0.1,120);
-  const hits=ray.intersectObjects(collidables,false);
-  if(hits.length>0){
-    const h=hits[0];
-    // hit marker
-    const hm=document.getElementById('hitmarker'); hm.classList.add('show');
-    clearTimeout(hitMarkTO); hitMarkTO=setTimeout(()=>hm.classList.remove('show'),120);
-    spawnSparks(h.point);
-    spawnBulletMark(h.point, h.face.normal.clone().transformDirection(h.object.matrixWorld));
+  const ray=new THREE.Raycaster(camera.position.clone(),dir,0.1,150);
+
+  // Check targets first
+  const targetMeshes=[];
+  targets.forEach(t=>{t.group.traverse(c=>{if(c.isMesh)targetMeshes.push(c);});});
+  const tHits=ray.intersectObjects(targetMeshes,false);
+  if(tHits.length>0){
+    const h=tHits[0];
+    const t=h.object.userData.targetRef;
+    if(t&&t.alive){
+      // Determine zone by distance from disc center
+      const local=h.object.worldToLocal(h.point.clone());
+      const dist=Math.sqrt(local.x*local.x+local.y*local.y);
+      const zone=dist<0.1?'bull':dist<0.25?'inner':'outer';
+      hitTarget(t,zone);
+      spawnSparks(h.point);
+      showHit();
+      return;
+    }
   }
+
+  // Check world geometry
+  const gHits=ray.intersectObjects(collidables,false);
+  if(gHits.length>0){
+    const h=gHits[0];
+    showHit();
+    spawnSparks(h.point);
+    const wn=h.face.normal.clone().transformDirection(h.object.matrixWorld);
+    spawnMark(h.point,wn);
+  }
+
   if(st.ammo===0)startReload();
 }
 
-// ── BUY MENU ──────────────────────────────────────────────────────────────────
+function showHit(){
+  const hm=document.getElementById('hitmarker');
+  hm.classList.add('show');clearTimeout(hitTO);
+  hitTO=setTimeout(()=>hm.classList.remove('show'),110);
+}
+
+// ─── BUY MENU ─────────────────────────────────────────────────────────────────
 let buyOpen=false;
-const buyMenu=document.getElementById('buy-menu');
+const buyMenuEl=document.getElementById('buy-menu');
 function toggleBuy(){
-  buyOpen=!buyOpen; buyMenu.classList.toggle('open',buyOpen);
-  if(buyOpen)document.exitPointerLock(); else canvas.requestPointerLock();
+  buyOpen=!buyOpen;buyMenuEl.classList.toggle('open',buyOpen);
+  if(buyOpen)document.exitPointerLock();else canvas.requestPointerLock();
 }
 document.querySelectorAll('.buy-item').forEach(el=>{
   el.addEventListener('click',()=>setWeapon(el.dataset.weapon));
 });
 document.getElementById('buy-close').addEventListener('click',()=>{
-  buyOpen=false; buyMenu.classList.remove('open'); canvas.requestPointerLock();
+  buyOpen=false;buyMenuEl.classList.remove('open');canvas.requestPointerLock();
 });
 
-// ── INPUT ─────────────────────────────────────────────────────────────────────
+// ─── INPUT ────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(e.code==='Digit1')setWeapon('rifle');
@@ -612,17 +853,17 @@ document.addEventListener('keydown',e=>{
   if(e.code==='KeyR'&&locked)startReload();
   if(e.code==='KeyF'&&locked)doInspect();
   if(e.code==='KeyB'&&(locked||buyOpen))toggleBuy();
-  if(e.code==='Escape'&&buyOpen){buyOpen=false;buyMenu.classList.remove('open');}
+  if(e.code==='Escape'&&buyOpen){buyOpen=false;buyMenuEl.classList.remove('open');}
   if(['Space','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();
 });
-document.addEventListener('keyup',e=>{keys[e.code]=false;});
-document.addEventListener('mousemove',e=>{ if(!locked)return; mouseDX+=e.movementX; mouseDY+=e.movementY; });
+document.addEventListener('keyup',e=>keys[e.code]=false);
+document.addEventListener('mousemove',e=>{if(!locked)return;mouseDX+=e.movementX;mouseDY+=e.movementY;});
 document.addEventListener('mousedown',e=>{
   if(!locked)return;
-  if(e.button===0){ lmbDown=true; const wc=WEAPON_CONFIGS[player.weapon]; if(!wc.auto)shoot(); }
-  if(e.button===2){ if(player.weapon==='knife')doKnifeRMB(); }
+  if(e.button===0){lmbDown=true;if(!WEAPON_CONFIGS[player.weapon].auto)shoot();}
+  if(e.button===2&&player.weapon==='knife')doKnifeRMB();
 });
-document.addEventListener('mouseup',e=>{ if(e.button===0)lmbDown=false; });
+document.addEventListener('mouseup',e=>{if(e.button===0)lmbDown=false;});
 document.addEventListener('contextmenu',e=>e.preventDefault());
 document.getElementById('overlay').addEventListener('click',()=>canvas.requestPointerLock());
 document.addEventListener('pointerlockchange',()=>{
@@ -630,219 +871,86 @@ document.addEventListener('pointerlockchange',()=>{
   document.getElementById('overlay').style.display=locked?'none':(buyOpen?'none':'flex');
 });
 
-// ── COLLISION ─────────────────────────────────────────────────────────────────
+// ─── COLLISION (AABB) ─────────────────────────────────────────────────────────
 function playerBox(pos){
   return new THREE.Box3(
-    new THREE.Vector3(pos.x-PLAYER_RADIUS,pos.y-PLAYER_HEIGHT,pos.z-PLAYER_RADIUS),
-    new THREE.Vector3(pos.x+PLAYER_RADIUS,pos.y+0.1,pos.z+PLAYER_RADIUS)
+    new THREE.Vector3(pos.x-PLAYER_R,pos.y-PLAYER_H,pos.z-PLAYER_R),
+    new THREE.Vector3(pos.x+PLAYER_R,pos.y+0.12,pos.z+PLAYER_R)
   );
 }
+
 function resolveCollision(pos,vel){
-  let grounded=false, wallTouch=false;
-  const wn=new THREE.Vector3(), _box=new THREE.Box3();
+  let grounded=false,wallTouch=false;
+  const wn=new THREE.Vector3();
+  const _b=new THREE.Box3();
   for(const obj of collidables){
-    _box.setFromObject(obj);
+    _b.setFromObject(obj);
     const pb=playerBox(pos);
-    if(!pb.intersectsBox(_box))continue;
-    const ox=Math.min(pb.max.x,_box.max.x)-Math.max(pb.min.x,_box.min.x);
-    const oy=Math.min(pb.max.y,_box.max.y)-Math.max(pb.min.y,_box.min.y);
-    const oz=Math.min(pb.max.z,_box.max.z)-Math.max(pb.min.z,_box.min.z);
+    if(!pb.intersectsBox(_b))continue;
+    const ox=Math.min(pb.max.x,_b.max.x)-Math.max(pb.min.x,_b.min.x);
+    const oy=Math.min(pb.max.y,_b.max.y)-Math.max(pb.min.y,_b.min.y);
+    const oz=Math.min(pb.max.z,_b.max.z)-Math.max(pb.min.z,_b.min.z);
     if(oy<ox&&oy<oz){
-      const py=(pb.min.y+pb.max.y)/2, oy2=(_box.min.y+_box.max.y)/2;
-      if(py<oy2){pos.y-=oy;if(vel.y>0)vel.y=0;}
+      const pcY=(pb.min.y+pb.max.y)/2,ocY=(_b.min.y+_b.max.y)/2;
+      if(pcY<ocY){pos.y-=oy;if(vel.y>0)vel.y=0;}
       else{pos.y+=oy;if(vel.y<0){vel.y=0;grounded=true;}}
     } else if(ox<oz){
-      const s=(pb.min.x+pb.max.x)/2<(_box.min.x+_box.max.x)/2?-1:1;
-      pos.x+=s*ox; if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(s,0,0));} vel.x*=0.3;
+      const s=(pb.min.x+pb.max.x)/2<(_b.min.x+_b.max.x)/2?-1:1;
+      pos.x+=s*ox;if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(s,0,0));}vel.x*=0.3;
     } else {
-      const s=(pb.min.z+pb.max.z)/2<(_box.min.z+_box.max.z)/2?-1:1;
-      pos.z+=s*oz; if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(0,0,s));} vel.z*=0.3;
+      const s=(pb.min.z+pb.max.z)/2<(_b.min.z+_b.max.z)/2?-1:1;
+      pos.z+=s*oz;if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(0,0,s));}vel.z*=0.3;
     }
   }
   if(wn.lengthSq()>0)wn.normalize();
   return{grounded,wallTouch,wallNormal:wn};
 }
 
-// ── VIEWMODEL UPDATE ──────────────────────────────────────────────────────────
-function updateViewmodel(dt, horizSpeed) {
-  const off = viewOffsets[player.weapon];
-  const wep = weaponMeshes[player.weapon];
-  Object.values(weaponMeshes).forEach(w=>w.visible=false);
-  wep.visible = true;
-
-  // ── Bob ──
-  const moving = horizSpeed > 1.5;
-  if(moving) bobTime += dt * 9;
-  const bobX = moving ? Math.sin(bobTime) * 0.015 : 0;
-  const bobY = moving ? Math.abs(Math.sin(bobTime)) * 0.009 : 0;
-
-  // ── Swap drop/raise ──
-  let swapDrop = 0;
-  if(anim.swapT > 0){
-    anim.swapT = Math.max(0, anim.swapT - dt * 7);
-    swapDrop = Math.sin(anim.swapT * Math.PI) * 0.18;
-  }
-
-  // ── Knife slash swing (LMB) ──
-  let slashRoll = 0, slashPitch = 0, slashFwd = 0;
-  if(anim.slashT > 0){
-    anim.slashT = Math.max(0, anim.slashT - dt * 6);
-    const t = 1 - anim.slashT; // 0..1 progress
-    const arc = Math.sin(t * Math.PI); // 0→1→0
-    if(anim.slashType === 1){
-      // Right-to-left swing
-      slashRoll  = -arc * 1.4;
-      slashPitch = arc * 0.4;
-    } else {
-      // Left-to-right swing
-      slashRoll  = arc * 1.4;
-      slashPitch = arc * 0.4;
-    }
-  }
-
-  // ── Knife RMB slash (overhead down) ──
-  let rmbPitch = 0, rmbDrop = 0;
-  if(anim.rmbSlashT > 0){
-    anim.rmbSlashT = Math.max(0, anim.rmbSlashT - dt * 5.5);
-    const arc = Math.sin((1 - anim.rmbSlashT) * Math.PI);
-    rmbPitch = arc * 1.0;
-    rmbDrop  = arc * 0.08;
-  }
-
-  // ── Knife toss (F inspect) ──
-  let tossRoll = 0, tossPitch = 0, tossY = 0, tossScale = 1;
-  if(anim.tossingKnife){
-    anim.tossT = Math.max(0, anim.tossT - dt);
-    const p = 1 - anim.tossT / TOSS_DUR; // 0..1
-    if(p < 0.35){
-      // Toss up: knife flies forward+up and spins
-      const sub = p / 0.35;
-      tossY      = sub * 0.2;
-      tossRoll   = sub * Math.PI * 3;
-      tossPitch  = -sub * 0.5;
-      tossScale  = 1 + sub * 0.15;
-    } else if(p < 0.65){
-      // Apex — knife "gone"
-      tossScale = 0.0;
-    } else {
-      // Catch — snaps back in
-      const sub = (p - 0.65) / 0.35;
-      tossY     = (1-sub) * 0.15;
-      tossRoll  = (1-sub) * Math.PI;
-      tossScale = sub;
-    }
-    if(anim.tossT <= 0){ anim.tossingKnife = false; }
-  }
-
-  // ── Gun inspect (F) ──
-  let inspRoll=0, inspPitch=0, inspYaw=0, inspX=0;
-  if(anim.inspecting){
-    anim.inspectT = Math.max(0, anim.inspectT - dt);
-    if(anim.inspectT <= 0) anim.inspecting = false;
-    const t = 1 - anim.inspectT / INSPECT_DUR;
-    inspRoll  = Math.sin(t * Math.PI * 2) * 0.5;
-    inspPitch = Math.sin(t * Math.PI * 4) * 0.22;
-    inspYaw   = Math.sin(t * Math.PI) * 0.3;
-    inspX     = Math.sin(t * Math.PI * 2) * 0.05;
-  }
-
-  // ── Knife idle float ──
-  const idleY = player.weapon === 'knife' ? Math.sin(Date.now() * 0.0011) * 0.005 : 0;
-
-  // ── Recoil recovery ──
-  anim.recoilPitch += (-anim.recoilPitch) * Math.min(1, 8*dt);
-  anim.recoilRoll  += (-anim.recoilRoll)  * Math.min(1, 10*dt);
-
-  // ── Position the entire viewmodel group ──
-  viewmodelGroup.position.set(
-    off.groupPos.x + bobX + inspX,
-    off.groupPos.y + bobY - swapDrop + idleY + tossY,
-    off.groupPos.z
-  );
-  viewmodelGroup.rotation.set(
-    off.groupRot.x + inspPitch + anim.recoilPitch,
-    off.groupRot.y + inspYaw,
-    off.groupRot.z + inspRoll + anim.recoilRoll
-  );
-
-  // ── Arm position/rotation within group ──
-  rightArm.position.copy(off.armPos);
-  rightArm.rotation.copy(off.armRot);
-  // Extra strafe tilt on arm
-  const strafe = (keys['KeyA']?1:0)-(keys['KeyD']?1:0);
-  rightArm.rotation.z += strafe * 0.06;
-
-  // ── Weapon pivot within group ──
-  weaponPivot.position.copy(off.wepPos);
-  weaponPivot.rotation.copy(off.wepRot);
-
-  // Apply knife slash to pivot
-  if(player.weapon === 'knife'){
-    weaponPivot.rotation.z += slashRoll;
-    weaponPivot.rotation.x += slashPitch + rmbPitch;
-    weaponPivot.position.y -= rmbDrop;
-    if(anim.tossingKnife){
-      weaponPivot.rotation.z += tossRoll;
-      weaponPivot.rotation.x += tossPitch;
-      weaponPivot.scale.setScalar(tossScale);
-    } else {
-      weaponPivot.scale.setScalar(1);
-    }
-  } else {
-    weaponPivot.scale.setScalar(1);
-  }
-
-  // Weapon mesh sits at origin of its pivot
-  wep.position.set(0,0,0);
-  wep.rotation.set(0,0,0);
+// ─── WALL/SLIDE FLASHES ───────────────────────────────────────────────────────
+function flashEl(id,dur=80){
+  const el=document.getElementById(id);
+  el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),dur);
 }
 
-// ── WALL FLASH ────────────────────────────────────────────────────────────────
-const wallFlash=document.getElementById('walljump-flash');
-function doWallJumpFlash(){
-  wallFlash.classList.add('flash'); setTimeout(()=>wallFlash.classList.remove('flash'),80);
-}
-
-// ── MAIN LOOP ─────────────────────────────────────────────────────────────────
-let prevTime=performance.now(), jumpPrev=false, slideCooldown=0;
+// ─── MAIN LOOP ────────────────────────────────────────────────────────────────
+let prevT=performance.now(),jumpPrev=false,slideCooldown=0;
 
 function update(){
   requestAnimationFrame(update);
-  const now=performance.now(), dt=Math.min((now-prevTime)/1000,0.05); prevTime=now;
+  const now=performance.now(),dt=Math.min((now-prevT)/1000,0.05);prevT=now;
   if(!locked){renderer.render(scene,camera);return;}
 
-  // Mouse look
-  player.yaw  -=mouseDX*0.0015; player.pitch-=mouseDY*0.0015;
+  // Look
+  player.yaw-=mouseDX*0.0015;player.pitch-=mouseDY*0.0015;
   player.pitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,player.pitch));
   mouseDX=mouseDY=0;
 
   // Speed
-  const isKnife=player.weapon==='knife';
-  const isSlide=keys['ShiftLeft']||keys['ShiftRight'];
-  player.crouching=false;
-  let speedMult=1;
-  if(isKnife)speedMult*=KNIFE_MULT;
-  if(player.sliding)speedMult=1.55;
+  const knife=player.weapon==='knife';
+  const shiftDown=keys['ShiftLeft']||keys['ShiftRight'];
+  let sm=knife?KNIFE_MULT:1;
+  if(player.sliding)sm=1.6;
+  const ms=WALK_SPEED*sm;
 
-  const moveSpeed=WALK_SPEED*speedMult;
-  const fwd =new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));
-  const rght=new THREE.Vector3( Math.cos(player.yaw),0,-Math.sin(player.yaw));
-  let wish=new THREE.Vector3();
+  const fwd=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));
+  const rgt=new THREE.Vector3(Math.cos(player.yaw),0,-Math.sin(player.yaw));
+  const wish=new THREE.Vector3();
   if(keys['KeyW'])wish.addScaledVector(fwd,1);
   if(keys['KeyS'])wish.addScaledVector(fwd,-1);
-  if(keys['KeyA'])wish.addScaledVector(rght,-1);
-  if(keys['KeyD'])wish.addScaledVector(rght,1);
+  if(keys['KeyA'])wish.addScaledVector(rgt,-1);
+  if(keys['KeyD'])wish.addScaledVector(rgt,1);
   if(wish.lengthSq()>0)wish.normalize();
 
-  // Slide on Shift
+  // Slide (Shift + moving on ground)
   slideCooldown=Math.max(0,slideCooldown-dt);
-  if(isSlide&&player.onGround&&!player.sliding&&slideCooldown===0&&wish.lengthSq()>0){
-    player.sliding=true; player.slideTimer=SLIDE_DUR;
-    player.vel.addScaledVector(fwd,SLIDE_FORCE*0.55); slideCooldown=0.65;
+  if(shiftDown&&player.onGround&&!player.sliding&&slideCooldown===0&&wish.lengthSq()>0){
+    player.sliding=true;player.slideTimer=SLIDE_DUR;
+    player.vel.addScaledVector(fwd,SLIDE_FORCE*0.5);
+    slideCooldown=0.65;flashEl('slide-boost-flash',120);
   }
   if(player.sliding){
     player.slideTimer-=dt;
-    if(player.slideTimer<=0||(!isSlide&&player.onGround))player.sliding=false;
+    if(player.slideTimer<=0||(!shiftDown&&player.onGround))player.sliding=false;
   }
 
   // Auto fire
@@ -853,69 +961,74 @@ function update(){
   if(reloading){
     reloadTimer-=dt;
     if(reloadTimer<=0){
-      const st=ammoState[player.weapon],wc=WEAPON_CONFIGS[player.weapon];
-      const take=Math.min(wc.ammo-st.ammo,st.reserve);
-      st.ammo+=take; st.reserve-=take;
-      reloading=false; document.getElementById('reload-msg').classList.remove('show');
+      ammoState[player.weapon].ammo=AMMO_MAX[player.weapon]; // infinite: fill from nothing
+      reloading=false;
+      document.getElementById('reload-msg').classList.remove('show');
       updateAmmoHUD();
     }
   }
 
-  // Movement
+  // Horizontal movement
   const accel=player.onGround?FRICTION:AIR_CONTROL*FRICTION;
-  if(player.onGround||wish.lengthSq()>0){
-    player.vel.x+=(wish.x*moveSpeed-player.vel.x)*Math.min(1,accel*dt);
-    player.vel.z+=(wish.z*moveSpeed-player.vel.z)*Math.min(1,accel*dt);
-  }
+  player.vel.x+=(wish.x*ms-player.vel.x)*Math.min(1,accel*dt);
+  player.vel.z+=(wish.z*ms-player.vel.z)*Math.min(1,accel*dt);
   if(player.onGround&&wish.lengthSq()===0&&!player.sliding){
-    const f=Math.max(0,1-FRICTION*dt); player.vel.x*=f; player.vel.z*=f;
+    const f=Math.max(0,1-FRICTION*dt);player.vel.x*=f;player.vel.z*=f;
   }
 
   // Jump / wall jump
   const jp=!!keys['Space'];
   if(jp&&!jumpPrev){
     if(player.onGround){
-      player.vel.y=JUMP_FORCE; player.onGround=false; player.wallJumps=0; player.sliding=false;
+      // Slide jump bonus: extra upward velocity if sliding
+      const bonus=player.sliding?SLIDE_JUMP_BONUS:0;
+      player.vel.y=JUMP_FORCE+bonus;
+      player.onGround=false;player.wallJumps=0;player.sliding=false;
+      if(bonus>0)flashEl('slide-boost-flash',180);
     } else if(player.touchingWall&&player.wallJumps<MAX_WALL_JUMPS){
       player.vel.y=WALL_JUMP_UP;
       player.vel.addScaledVector(player.wallNormal,WALL_JUMP_FORCE);
       player.wallJumps++;
-      doWallJumpFlash();
-      document.getElementById('tag-wall').classList.add('active');
-      setTimeout(()=>document.getElementById('tag-wall').classList.remove('active'),300);
+      flashEl('walljump-flash',90);
+      const tw=document.getElementById('tag-wall');
+      tw.classList.add('active');setTimeout(()=>tw.classList.remove('active'),350);
     }
   }
   jumpPrev=jp;
 
+  // Gravity
   player.vel.y+=GRAVITY*dt;
-  const newPos=player.pos.clone().addScaledVector(player.vel,dt);
-  if(newPos.y-PLAYER_HEIGHT<0){newPos.y=PLAYER_HEIGHT;if(player.vel.y<0){player.vel.y=0;player.onGround=true;}}
 
-  const col=resolveCollision(newPos,player.vel);
+  // Integrate & floor clamp
+  const np=player.pos.clone().addScaledVector(player.vel,dt);
+  if(np.y-PLAYER_H<0){np.y=PLAYER_H;if(player.vel.y<0){player.vel.y=0;player.onGround=true;}}
+
+  const col=resolveCollision(np,player.vel);
   if(col.grounded){player.onGround=true;player.wallJumps=0;}
-  else if(newPos.y-PLAYER_HEIGHT>0.05)player.onGround=false;
+  else if(np.y-PLAYER_H>0.06)player.onGround=false;
   player.touchingWall=col.wallTouch&&!player.onGround;
   player.wallNormal.copy(col.wallNormal);
-  player.pos.copy(newPos);
+  player.pos.copy(np);
 
   // Camera
-  const tgtH=player.sliding?0.85:PLAYER_HEIGHT;
-  camera.position.lerp(new THREE.Vector3(player.pos.x,player.pos.y-PLAYER_HEIGHT+tgtH,player.pos.z),0.22);
+  const tH=player.sliding?0.85:PLAYER_H;
+  camera.position.lerp(new THREE.Vector3(player.pos.x,player.pos.y-PLAYER_H+tH,player.pos.z),0.22);
   camera.rotation.order='YXZ';
   camera.rotation.y=player.yaw;
-  camera.rotation.x=player.pitch+anim.recoilPitch;
+  camera.rotation.x=player.pitch+AN.recoilP;
   const sr=(keys['KeyA']?1:0)-(keys['KeyD']?1:0);
-  camera.rotation.z=THREE.MathUtils.lerp(camera.rotation.z,sr*0.022+anim.recoilRoll,0.12);
+  camera.rotation.z=THREE.MathUtils.lerp(camera.rotation.z,sr*0.02+AN.recoilR,0.12);
 
   // HUD
   const hs=Math.sqrt(player.vel.x**2+player.vel.z**2);
-  document.getElementById('speed-fill').style.width=Math.min(100,(hs/(WALK_SPEED*KNIFE_MULT*1.6))*100)+'%';
+  document.getElementById('speed-fill').style.width=Math.min(100,hs/(WALK_SPEED*KNIFE_MULT*1.7)*100)+'%';
   document.getElementById('tag-air').classList.toggle('active',!player.onGround);
   document.getElementById('tag-boost').classList.toggle('active',player.sliding);
 
   updateViewmodel(dt,hs);
   updateSparks(dt);
-  updateBulletMarks(dt);
+  updateMarks(dt);
+  updateTargets(dt);
   renderer.render(scene,camera);
 }
 
@@ -924,7 +1037,7 @@ update();
 updateAmmoHUD();
 
 window.addEventListener('resize',()=>{
-  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
 });
 </script>
