@@ -90,7 +90,7 @@ body{background:#000;overflow:hidden;font-family:'Courier New',monospace}
   <div id="hitmarker"></div>
   <div id="top-left">
     <div class="title">GRIDLOCK</div>
-    <div style="font-size:10px;opacity:.5;letter-spacing:2px">ARENA v1.4</div>
+    <div style="font-size:10px;opacity:.5;letter-spacing:2px">ARENA v1.5</div>
     <div id="status-tags">
       <div class="tag" id="tag-air">AIR</div>
       <div class="tag" id="tag-wall">WALL</div>
@@ -161,9 +161,9 @@ document.addEventListener('keydown',e=>{
 },true);
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const GRAVITY=-22, JUMP_FORCE=9, WALK_SPEED=9.5;   // faster base speed
-const KNIFE_MULT=1.6, AIR_CONTROL=0.32, FRICTION=11;
-const WALL_JUMP_FORCE=10, WALL_JUMP_UP=8.5, MAX_WALL_JUMPS=3;
+const GRAVITY=-22, JUMP_FORCE=9, WALK_SPEED=9.5;
+const KNIFE_MULT=1.6, AIR_CONTROL=0.38, FRICTION=11;
+const WALL_JUMP_FORCE=13, WALL_JUMP_UP=9.5, MAX_WALL_JUMPS=99; // unlimited wall jumps
 const SLIDE_FORCE=18, SLIDE_DUR=0.45, SLIDE_JUMP_BONUS=4;
 const PLAYER_H=1.75, PLAYER_R=0.3;
 const WEAPON_CONFIGS={
@@ -319,47 +319,53 @@ function buildArena(){
   box(6,1,12,36,0.5,0,bM);
   box(6,1,12,-36,0.5,0,bM);
 
-  // ── TALL TOWERS — many, spread around for wall jumping ──────────────────
-  // Central tall towers (x±18, z±18)
+  // ── TALL TOWERS — dense wall-jump jungle ─────────────────────────────────
+  // Format: [x, height, z]  — all get a slim 3×3 body + glowing landing cap
   const towerDefs=[
-    // [x, baseH, topH, z, hasCap]
-    [-38, 14, 1.0,  0, true ],   // original left
-    [ 38, 12, 1.0,  0, true ],   // original right
-    // New wall-jump pillars — tall slim columns scattered around the arena
-    [-18, 12, 0.6, -18, true ],
-    [ 18, 12, 0.6,  18, true ],
-    [-18, 10, 0.6,  18, true ],
-    [ 18, 10, 0.6, -18, true ],
-    [  0, 16, 0.6,  22, true ],
-    [  0, 16, 0.6, -22, true ],
-    [-28,  9, 0.6,  14, true ],
-    [ 28,  9, 0.6, -14, true ],
-    [-50,  8, 0.6,   0, true ],
-    [ 50,  8, 0.6,   0, true ],
-    [ 0,  14, 0.6, -50, true ],
-    [ 0,  14, 0.6,  50, true ],
-    [-28, 11, 0.6, -28, true ],
-    [ 28, 11, 0.6,  28, true ],
+    // original anchor towers (wider body so you can press against them easily)
+    [-38, 16,  0 ],
+    [ 38, 14,  0 ],
+    // inner ring  (radius ~18, 8 pillars)
+    [-18, 13, -18], [ 18, 13,  18],
+    [-18, 11,  18], [ 18, 11, -18],
+    [  0, 15,  20], [  0, 15, -20],
+    [-20, 12,   0], [ 20, 12,   0],
+    // mid ring (radius ~30, 8 pillars)
+    [-30, 14, -14], [ 30, 14,  14],
+    [-30, 12,  14], [ 30, 12, -14],
+    [-14, 13, -30], [ 14, 13,  30],
+    [-14, 11,  30], [ 14, 11, -30],
+    // outer ring (radius ~48, 8 pillars)
+    [-48, 10,  0 ], [ 48, 10,  0 ],
+    [  0, 12, -48], [  0, 12,  48],
+    [-34, 10, -34], [ 34, 10,  34],
+    [-34,  9,  34], [ 34,  9, -34],
+    // dense corridor — pairs that face each other for rapid bouncing
+    [-8,  12,  32], [ 8,  12,  32],
+    [-8,  12, -32], [ 8,  12, -32],
+    [ 32, 11,  -8], [ 32, 11,   8],
+    [-32, 11,  -8], [-32, 11,   8],
+    // extra asymmetric fillers
+    [-24,  9,  26], [ 24,  9, -26],
+    [ 26, 10,  24], [-26, 10, -24],
+    [  6, 14,  14], [ -6, 14, -14],
   ];
 
-  towerDefs.forEach(([x, h, cap, z, hasCap])=>{
-    // Main slim pillar (3×3 footprint for wall-jumping, tall)
+  towerDefs.forEach(([x, h, z])=>{
     box(3, h, 3, x, h/2, z, towerM);
-    if(hasCap){
-      // Glowing top cap, slightly wider — also a platform to land on
-      box(4.5, cap, 4.5, x, h+cap/2, z, towerGlow);
-    }
-    // Ramp to the first landing (only for the two main towers)
-    if(x===-38 || x===38){
-      const dir = x < 0 ? 1 : -1;
-      const angle = Math.atan2(h*0.55, 7);
-      const hyp   = Math.sqrt(7*7 + (h*0.55)**2);
-      const m = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.22, hyp), rM);
-      m.position.set(x + dir*4.5, h*0.275, z);
-      m.rotation.x = dir > 0 ? angle : -angle;
-      m.castShadow = m.receiveShadow = true;
-      scene.add(m); collidables.push(m);
-    }
+    box(5, 0.7, 5, x, h+0.35, z, towerGlow);  // wide landing cap
+  });
+
+  // Ramp up to the two anchor towers only
+  [[-38,16],[ 38,14]].forEach(([x,h])=>{
+    const dir = x < 0 ? 1 : -1;
+    const angle = Math.atan2(h*0.55, 7);
+    const hyp   = Math.sqrt(7*7 + (h*0.55)**2);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.22, hyp), rM);
+    m.position.set(x + dir*4.5, h*0.275, 0);
+    m.rotation.x = dir > 0 ? angle : -angle;
+    m.castShadow = m.receiveShadow = true;
+    scene.add(m); collidables.push(m);
   });
 
   // ── MID ELEVATED BOXES ────────────────────────────────────────────────────
@@ -612,12 +618,12 @@ function updateTossDom(now){
   const sx = 120 * (1 - p*0.5);
   const sy = 80 - arc * 300;        // goes 220px above start
 
-  // Spin: 2.5 full rotations during the arc, then ~0 at catch
-  const spinEase = p < 0.85 ? p/0.85 : 1;
+  // Spin: 2.5 full rotations during the arc, continuous
+  const spinEase = p < 0.88 ? p/0.88 : 1;
   const rotDeg = spinEase * 360 * 2.5;
 
-  // Scale: big when close (start/end), small at peak (distance illusion)
-  const scale = 0.7 + arc * (-0.15) + (1-arc)*0.3;  // shrinks slightly at top
+  // Scale: stays full size — just a natural arc, no distance shrink trick
+  const scale = 1.0;
 
   tossDom.style.opacity = p < 0.06 || p > 0.94 ? String(1 - Math.abs(p<0.5 ? 1-p*16 : (p-0.94)*16)) : '1';
   tossDom.style.opacity = '1';
@@ -641,7 +647,24 @@ const AN={
   recoilP:0, recoilR:0,
 };
 
-function doKnifeLMB(){AN.slashT=1;AN.slashSide=(AN.slashSide+1)%2;}
+function doKnifeLMB(){
+  AN.slashT=1;AN.slashSide=(AN.slashSide+1)%2;
+  // Melee raycast — knife reaches 2.2 units in front of the player
+  const dir=new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(player.pitch,player.yaw,0,'YXZ'));
+  const ray=new THREE.Raycaster(camera.position.clone(),dir,0.05,2.2);
+  const targetMeshes=[];
+  targets.forEach(t=>{t.group.traverse(c=>{if(c.isMesh)targetMeshes.push(c);});});
+  const tHits=ray.intersectObjects(targetMeshes,false);
+  if(tHits.length>0){
+    const h=tHits[0];
+    const t=h.object.userData.targetRef;
+    if(t&&t.alive){
+      hitTarget(t,'inner');  // knife always counts as a solid hit
+      spawnSparks(h.point);
+      showHit();
+    }
+  }
+}
 function doKnifeRMB(){AN.rmbT=1;}
 
 function doInspect(){
@@ -922,10 +945,13 @@ function resolveCollision(pos,vel){
       else{pos.y+=oy;if(vel.y<0){vel.y=0;grounded=true;}}
     } else if(ox<oz){
       const s=(pb.min.x+pb.max.x)/2<(_b.min.x+_b.max.x)/2?-1:1;
-      pos.x+=s*ox;if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(s,0,0));}vel.x*=0.3;
+      pos.x+=s*ox;if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(s,0,0));}
+      // only zero out the INTO-wall component, keep speed
+      if(s>0&&vel.x<0)vel.x=0; else if(s<0&&vel.x>0)vel.x=0;
     } else {
       const s=(pb.min.z+pb.max.z)/2<(_b.min.z+_b.max.z)/2?-1:1;
-      pos.z+=s*oz;if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(0,0,s));}vel.z*=0.3;
+      pos.z+=s*oz;if(!grounded){wallTouch=true;wn.add(new THREE.Vector3(0,0,s));}
+      if(s>0&&vel.z<0)vel.z=0; else if(s<0&&vel.z>0)vel.z=0;
     }
   }
   if(wn.lengthSq()>0)wn.normalize();
@@ -1007,7 +1033,8 @@ function update(){
       player.vel.y=JUMP_FORCE+bonus;
       player.onGround=false;player.wallJumps=0;player.sliding=false;
       if(bonus>0)flashEl('slide-boost-flash',180);
-    } else if(player.touchingWall&&player.wallJumps<MAX_WALL_JUMPS){
+    } else if(player.touchingWall){
+      // unlimited consecutive wall jumps — wallJumps only caps same-wall spam
       player.vel.y=WALL_JUMP_UP;
       player.vel.addScaledVector(player.wallNormal,WALL_JUMP_FORCE);
       player.wallJumps++;
